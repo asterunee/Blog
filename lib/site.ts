@@ -11,6 +11,7 @@ export const siteConfig = {
   motto: settings.motto,
   supportingLine: settings.supportingLine,
   role: settings.role,
+  profileImage: settings.profileImage,
   nowTitle: settings.nowTitle,
   nowDescription: settings.nowDescription,
   backgroundImage: settings.backgroundImage,

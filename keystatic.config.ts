@@ -392,6 +392,7 @@ export default config({
         motto: fields.text({ label: "짧은 문구", ...required }),
         supportingLine: fields.text({ label: "보조 문구", ...required }),
         role: fields.text({ label: "소개 역할", ...required }),
+        profileImage: fields.image({ label: "프로필 이미지", description: "사이드바, 소개 화면과 글 작성자 영역에 표시됩니다.", directory: "public/images", publicPath: "/images/" }),
         nowTitle: fields.text({ label: "현재 관심사 제목", description: "비우면 홈의 현재 관심사 위젯을 숨깁니다." }),
         nowDescription: fields.text({ label: "현재 관심사 설명", multiline: true }),
         backgroundImage: fields.image({ label: "사이트 배경 이미지", description: "기존 이미지 또는 새 이미지를 업로드할 수 있습니다.", directory: "public/images", publicPath: "/images/" }),

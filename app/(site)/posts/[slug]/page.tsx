@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MdxContent } from "@/components/mdx-content";
+import { ArticleAuthor } from "@/components/article-author";
 import { TableOfContents } from "@/components/toc";
 import { extractHeadings, getPost, getPosts } from "@/lib/content";
-import { siteConfig } from "@/lib/site";
 import { getCategoryName, getContentTypeName } from "@/lib/taxonomy";
 
 export function generateStaticParams() { return getPosts(false).map((post) => ({ slug: post.slug })); }
@@ -52,7 +52,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       {post.coverImage && <div className="article-cover"><Image src={post.coverImage} alt={post.coverAlt || ""} fill priority sizes="(max-width: 900px) 100vw, 820px" /></div>}
     </header>
     <div className={`article-layout${showToc ? "" : " without-toc"}`}>{showToc && <TableOfContents headings={headings} />}<article className="prose"><MdxContent source={post.body} /></article></div>
-    <aside className="article-author"><UserRound size={26} aria-hidden /><div><span>작성자</span><h2>{post.author}</h2><p>{siteConfig.sidebarIntro}</p></div><Link href="/about">작성자 소개 <ArrowRight size={14} /></Link></aside>
+    <ArticleAuthor name={post.author} />
     {related.length > 0 && <section className="related-posts"><header><h2>같은 카테고리의 글</h2></header><div>{related.map((entry) => <Link href={`/posts/${entry.slug}`} key={entry.slug}><span>{entry.date} · {entry.readingMinutes}분</span><h3>{entry.title}</h3><p>{entry.description}</p></Link>)}</div></section>}
     <nav className="post-nav">{prev ? <Link href={`/posts/${prev.slug}`}><span>이전 글</span><b><ArrowLeft size={15} /> {prev.title}</b></Link> : <span />}{next ? <Link href={`/posts/${next.slug}`}><span>다음 글</span><b>{next.title} <ArrowRight size={15} /></b></Link> : <span />}</nav>
   </div>;

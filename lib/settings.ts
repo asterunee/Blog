@@ -12,6 +12,7 @@ type SiteSettings = {
   motto: string;
   supportingLine: string;
   role: string;
+  profileImage: string;
   nowTitle: string;
   nowDescription: string;
   backgroundImage: string;
@@ -51,6 +52,7 @@ const defaults: SiteSettings = {
   motto: "배운 것을 정리하고, 생각을 나눕니다.",
   supportingLine: "개발, 알고리즘과 일상의 기록을 차분히 이어갑니다.",
   role: "개발자 · 경쟁 프로그래머 · 글쓴이",
+  profileImage: "/images/profile-asterunee.webp",
   nowTitle: "",
   nowDescription: "",
   backgroundImage: "/images/observatory-hero.webp",
@@ -70,6 +72,7 @@ export const siteSettings: SiteSettings = {
   ...defaults,
   ...stored,
   backgroundImage: stored.backgroundImage || "",
+  profileImage: stored.profileImage || defaults.profileImage,
   backgroundStrength: Number.isFinite(stored.backgroundStrength) ? stored.backgroundStrength as number : defaults.backgroundStrength,
   defaultTheme: selectedTheme,
   navigation: Array.isArray(stored.navigation) && stored.navigation.length

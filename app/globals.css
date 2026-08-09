@@ -302,7 +302,8 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
 }
 
 /* unified reader-first blog system */
-.wordmark b {
+.wordmark-avatar {
+  position: relative;
   width: 29px;
   height: 29px;
   display: grid;
@@ -312,7 +313,10 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
   color: var(--cyan);
   background: color-mix(in srgb, var(--cyan) 7%, transparent);
   font: 600 13px/1 var(--font-display);
+  overflow: hidden;
+  flex: none;
 }
+.wordmark-avatar img { object-fit: cover; }
 .theme-trigger { width: auto; display: flex; gap: 7px; padding: 0 10px; }
 .theme-trigger span { font-size: 10px; white-space: nowrap; }
 
@@ -763,7 +767,7 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
   border-radius: 4px;
   background: var(--deep);
 }
-.editorial-about-image > img { object-fit: cover; object-position: 61% center; }
+.editorial-about-image > img { object-fit: cover; object-position: center; }
 .editorial-about-image::after { content: ""; position: absolute; inset: 60% 0 0; background: linear-gradient(transparent, rgba(2, 5, 13, .82)); }
 .editorial-about-image figcaption {
   position: absolute;
@@ -975,14 +979,15 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
 .mdx-gallery { display:grid; grid-template-columns:repeat(var(--gallery-columns),minmax(0,1fr)); gap:10px; margin:40px 0; }
 .mdx-gallery-image { min-width:0; margin:0; }.mdx-gallery-image > div { position:relative; aspect-ratio:4/3; overflow:hidden; border:1px solid var(--border); }.mdx-gallery-image img { object-fit:cover; }.mdx-gallery-image figcaption { margin-top:6px; color:var(--muted); font-size:9px; }
 .mdx-embed-error { padding:15px; border:1px solid rgba(241,181,106,.35); color:#f1b56a; }
-.article-author { width:min(820px,100%); display:grid; grid-template-columns:36px 1fr auto; align-items:center; gap:18px; margin-top:90px; padding:24px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-.article-author > svg { color:var(--cyan); }.article-author span { color:var(--cyan); font:8px var(--font-display); letter-spacing:.13em; }.article-author h2 { margin:2px 0; font:500 17px var(--font-display); }.article-author p { margin:0; color:var(--muted); font-size:10px; }.article-author > a { display:flex; align-items:center; gap:6px; color:var(--cyan); font-size:10px; }
+.article-author { width:min(820px,100%); display:grid; grid-template-columns:46px 1fr auto; align-items:center; gap:18px; margin-top:90px; padding:24px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.article-author-avatar { position:relative; width:44px; height:44px; overflow:hidden; border:1px solid color-mix(in srgb,var(--cyan) 30%,var(--border)); border-radius:50%; background:var(--surface); }
+.article-author-avatar img { object-fit:cover; }.article-author span { color:var(--cyan); font:8px var(--font-display); letter-spacing:.13em; }.article-author h2 { margin:2px 0; font:500 17px var(--font-display); }.article-author p { margin:0; color:var(--muted); font-size:10px; }.article-author > a { display:flex; align-items:center; gap:6px; color:var(--cyan); font-size:10px; }
 .related-posts { width:min(1000px,100%); margin-top:85px; }.related-posts header h2 { margin:7px 0 20px; font:500 26px var(--font-display); }.related-posts > div { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); }.related-posts > div > a { min-height:170px; padding:21px; background:var(--bg); }.related-posts > div > a:hover { background:var(--surface); }.related-posts a > span { color:var(--cyan); font:8px var(--font-display); }.related-posts h3 { margin:11px 0 7px; font:500 16px/1.4 var(--font-display); }.related-posts p { margin:0; color:var(--muted); font-size:10px; }
 
 @media (max-width:700px) {
   .category-index { grid-template-columns:1fr; }
   .mdx-gallery { grid-template-columns:1fr; }
-  .article-author { grid-template-columns:30px 1fr; }
+  .article-author { grid-template-columns:46px 1fr; }
   .article-author > a { grid-column:2; }
   .related-posts > div { grid-template-columns:1fr; }
 }

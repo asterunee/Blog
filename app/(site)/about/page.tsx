@@ -35,7 +35,7 @@ export default function AboutPage() {
         <Link href="/posts">작성한 글 보기 <ArrowRight size={15} /></Link>
       </div>
       <figure className="editorial-about-image">
-        <Image src="/images/earth-orbit.webp" fill priority sizes="(max-width: 780px) 100vw, 520px" alt="어두운 배경에서 바라본 푸른 지구" />
+        <Image src={siteConfig.profileImage} fill priority sizes="(max-width: 780px) 100vw, 520px" alt="asterunee 프로필 이미지" />
         <figcaption><span>asterunee</span><small>{siteConfig.role}</small></figcaption>
       </figure>
     </header>
