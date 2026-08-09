@@ -15,6 +15,14 @@ const solutionSchema = z.object({
 
 export type Solution = z.infer<typeof solutionSchema> & { body: string; readingMinutes: number };
 
+const postSchema = z.object({
+  title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
+  date: z.string(), updated: z.string(), author: z.literal("asterunee"),
+  category: z.string(), tags: z.array(z.string()).default([]), featured: z.boolean().default(false), draft: z.boolean(),
+});
+
+export type BlogPost = z.infer<typeof postSchema> & { body: string; readingMinutes: number };
+
 const logSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: z.string(), updated: z.string(), author: z.literal("asterunee"),
@@ -36,6 +44,20 @@ export function getSolutions(includeDrafts = process.env.NODE_ENV !== "productio
 }
 
 export function getSolution(slug: string) { return getSolutions().find((post) => post.slug === slug); }
+
+export function getPosts(includeDrafts = process.env.NODE_ENV !== "production"): BlogPost[] {
+  const dir = path.join(process.cwd(), "content/posts");
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).filter((file) => file.endsWith(".mdx")).map((file) => {
+    const raw = fs.readFileSync(path.join(dir, file), "utf8");
+    const { data, content } = matter(raw);
+    const parsed = postSchema.safeParse({ ...data, slug: data.slug || file.replace(/\.mdx$/, "") });
+    if (!parsed.success) throw new Error(`Invalid frontmatter in ${file}: ${parsed.error.message}`);
+    return { ...parsed.data, body: content, readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)) };
+  }).filter((post) => includeDrafts || !post.draft).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getPost(slug: string) { return getPosts().find((post) => post.slug === slug); }
 
 export function getLogs(includeDrafts = process.env.NODE_ENV !== "production"): LogPost[] {
   const dir = path.join(process.cwd(), "content/log");

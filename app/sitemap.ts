@@ -1,5 +1,69 @@
 import type { MetadataRoute } from "next";
-import { getLogs, getSolutions } from "@/lib/content";
+import { getLogs, getPosts, getSolutions } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap { const solutions = getSolutions(false); const logs = getLogs(false); const pages = ["", "/solutions", "/algorithms", "/tags", "/archive", "/library", "/log", "/about"].map((path) => ({ url: `${siteConfig.url}${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "" ? 1 : .7 })); const posts = [...solutions.map((post) => ({ url: `${siteConfig.url}/solutions/${post.slug}`, lastModified: new Date(post.updated), changeFrequency: "monthly" as const, priority: .8 })), ...logs.map((post) => ({ url: `${siteConfig.url}/log/${post.slug}`, lastModified: new Date(post.updated), changeFrequency: "monthly" as const, priority: .7 }))]; const taxonomies = [...new Set([...solutions.flatMap((post) => post.tags), ...logs.flatMap((post) => post.tags)])].map((tag) => ({ url: `${siteConfig.url}/tags/${tag}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: .5 })); const judges = [...new Set(solutions.map((post) => post.judge))].map((judge) => ({ url: `${siteConfig.url}/judge/${encodeURIComponent(judge)}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: .5 })); return [...pages, ...posts, ...taxonomies, ...judges]; }
+export default function sitemap(): MetadataRoute.Sitemap {
+  const articles = getPosts(false);
+  const solutions = getSolutions(false);
+  const logs = getLogs(false);
+
+  const pages = [
+    "",
+    "/posts",
+    "/solutions",
+    "/algorithms",
+    "/tags",
+    "/archive",
+    "/library",
+    "/log",
+    "/about",
+  ].map((path) => ({
+    url: `${siteConfig.url}${path}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: path === "" ? 1 : 0.7,
+  }));
+
+  const entries = [
+    ...articles.map((post) => ({
+      url: `${siteConfig.url}/posts/${post.slug}`,
+      lastModified: new Date(post.updated),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
+    ...solutions.map((post) => ({
+      url: `${siteConfig.url}/solutions/${post.slug}`,
+      lastModified: new Date(post.updated),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
+    ...logs.map((post) => ({
+      url: `${siteConfig.url}/log/${post.slug}`,
+      lastModified: new Date(post.updated),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
+
+  const tags = [
+    ...new Set([
+      ...articles.flatMap((post) => post.tags),
+      ...solutions.flatMap((post) => post.tags),
+      ...logs.flatMap((post) => post.tags),
+    ]),
+  ].map((tag) => ({
+    url: `${siteConfig.url}/tags/${encodeURIComponent(tag)}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }));
+
+  const judges = [...new Set(solutions.map((post) => post.judge))].map((judge) => ({
+    url: `${siteConfig.url}/judge/${encodeURIComponent(judge)}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }));
+
+  return [...pages, ...entries, ...tags, ...judges];
+}

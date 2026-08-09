@@ -17,7 +17,7 @@ updated: "${today}"
 author: "asterunee"
 judge: "Codeforces"
 problemId: "0000A"
-problemUrl: "https://example.com"
+problemUrl: "https://codeforces.com/"
 difficulty: 0
 tier: "Unrated"
 tags: ["algorithm"]

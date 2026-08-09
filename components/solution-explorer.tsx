@@ -19,6 +19,6 @@ export function SolutionExplorer({ posts }: { posts: Solution[] }) {
     <div className={`solution-results ${view}`}>{filtered.map((post, index) => <Link key={post.slug} className="solution-row" href={`/solutions/${post.slug}`}>
       <span className="catalog-no">{String(index + 1).padStart(2,"0")}</span><div className="solution-main"><div><span className="status-dot" />{post.status}</div><h2>{post.title}</h2><p>{post.description}</p><div className="tag-row">{post.tags.map((t) => <span key={t}>{t}</span>)}</div></div><dl><div><dt>Source</dt><dd>{post.judge} · {post.problemId}</dd></div><div><dt>Magnitude</dt><dd>{post.difficulty} · {post.tier}</dd></div><div><dt>Observed</dt><dd>{post.date} · {post.solveTime} min</dd></div></dl>
     </Link>)}</div>
-    {!filtered.length && <div className="empty-state">이 조건과 일치하는 관측 기록이 없습니다.</div>}
+    {!filtered.length && <div className="empty-state">{posts.length ? "이 조건과 일치하는 풀이가 없습니다." : "아직 공개한 PS 풀이가 없습니다. 기록을 작성하면 이곳에 차곡차곡 쌓입니다."}</div>}
   </>;
 }
