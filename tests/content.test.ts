@@ -38,7 +38,7 @@ describe("content pipeline", () => {
   });
 
   it("keeps custom writer sections and their empty content source safe", () => {
-    expect(writerSections.map((section) => section.key)).toEqual(["posts", "solutions", "logs"]);
+    expect(writerSections).toEqual([]);
     expect(customContentSections).toEqual([]);
     expect(getCustomPosts(false)).toEqual([]);
   });
