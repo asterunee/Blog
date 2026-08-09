@@ -91,7 +91,7 @@ npx vercel --prod
 
 ### GitHub 자동 배포
 
-`.github/workflows/ci.yml`은 `main` push에서 품질 검사를 통과한 뒤 Vercel production을 배포합니다. GitHub 저장소의 Actions secrets에 `VERCEL_TOKEN`을 등록해야 합니다. Vercel 조직·프로젝트 ID는 workflow에 현재 `asterunee` 프로젝트 값으로 연결되어 있습니다.
+`.github/workflows/ci.yml`은 push와 pull request마다 품질 검사를 실행합니다. `asterunee/Blog` 저장소는 Vercel 프로젝트에 직접 연결되어 있어 `main` push가 production 배포를 자동으로 시작하며, 별도의 배포 토큰은 필요하지 않습니다.
 
 ## 구조
 
