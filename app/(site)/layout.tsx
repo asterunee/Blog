@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
 import { Noto_Sans_KR, Space_Grotesk } from "next/font/google";
 import "katex/dist/katex.min.css";
-import "./globals.css";
+import "../globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { siteConfig } from "@/lib/site";
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { themeColor: "#050814", colorScheme: "dark light" };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const schema = { "@context": "https://schema.org", "@type": "Blog", name: "asterunee", description: siteConfig.description, url: siteConfig.url, author: { "@type": "Person", name: "asterunee" } };
   const bodyStyle = { "--cyan": siteConfig.accentColor } as CSSProperties;
   const backgroundStyle = { backgroundImage: siteConfig.backgroundImage ? `url(${siteConfig.backgroundImage})` : undefined, backgroundPosition: siteConfig.backgroundPosition, opacity: Math.max(0, Math.min(60, siteConfig.backgroundStrength)) / 100 } as CSSProperties;
