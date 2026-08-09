@@ -17,7 +17,7 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          NEXT_PUBLIC_SITE_URL: https://example.com
+          NEXT_PUBLIC_SITE_URL: https://asterunee.vercel.app
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: quality
