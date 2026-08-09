@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, ChevronDown, Code2, Folder, FolderOpen, NotebookPen } from "lucide-react";
 import { getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getManagedCategories } from "@/lib/taxonomy";
 
 export const metadata: Metadata = {
   title: "카테고리",
@@ -13,11 +14,17 @@ export default function CategoriesPage() {
   const posts = getPosts();
   const solutions = getSolutions();
   const logs = getLogs();
-  const articleCategories = [...posts.reduce((counts, post) => counts.set(post.category, (counts.get(post.category) || 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
+  const managedCategories = getManagedCategories().filter((category) => category.visible);
+  const articleCounts = posts.reduce((counts, post) => counts.set(post.category, (counts.get(post.category) || 0) + 1), new Map<string, number>());
+  const managedSlugs = new Set(managedCategories.map((category) => category.slug));
+  const articleCategories = [
+    ...managedCategories.map((category) => [category.slug, category.name, articleCounts.get(category.slug) || 0] as const),
+    ...[...articleCounts].filter(([slug]) => !managedSlugs.has(slug)).map(([slug, count]) => [slug, slug, count] as const),
+  ];
   const judges = [...solutions.reduce((counts, post) => counts.set(post.judge, (counts.get(post.judge) || 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
   const logTypes = [...logs.reduce((counts, post) => counts.set(post.type, (counts.get(post.type) || 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
   const groups = [
-    { label: "일반 글", icon: BookOpenText, count: posts.length, entries: articleCategories.map(([name, count]) => ({ name, count, href: `/categories/${encodeURIComponent(name)}` })) },
+    { label: "일반 글", icon: BookOpenText, count: posts.length, entries: articleCategories.map(([slug, name, count]) => ({ name, count, href: `/categories/${encodeURIComponent(slug)}` })) },
     { label: "PS 풀이", icon: Code2, count: solutions.length, entries: judges.map(([name, count]) => ({ name, count, href: `/judge/${encodeURIComponent(name)}` })) },
     { label: "짧은 기록", icon: NotebookPen, count: logs.length, entries: logTypes.map(([name, count]) => ({ name, count, href: "/log" })) },
   ].filter((group) => group.entries.length > 0);
@@ -36,7 +43,7 @@ export default function CategoriesPage() {
     <div className="page-shell editorial-category-layout">
       <main>
         <header className="editorial-section-title"><h2>주제별 보기</h2><Link href="/posts">전체 글 <ArrowRight size={14} /></Link></header>
-        {groups.length ? <div className="editorial-folders">{groups.map((group, index) => { const Icon = group.icon; return <details key={group.label} open={index === 0}><summary><Icon size={18} /><div><b>{group.label}</b><small>{group.entries.length}개 분류 · {group.count}개 기록</small></div><ChevronDown size={16} /></summary><div>{group.entries.map((entry) => <Link href={entry.href} key={`${group.label}-${entry.name}`}><Folder size={15} /><span>{entry.name}</span><small>{entry.count}</small><ArrowRight size={13} /></Link>)}</div></details>; })}</div> : <section className="editorial-empty"><FolderOpen size={22} /><h2>아직 만들어진 카테고리가 없습니다</h2><p>글이나 풀이를 공개하면 이곳에 분류가 자동으로 정리됩니다.</p><Link href="/posts">전체 글 보기 <ArrowRight size={14} /></Link></section>}
+        {groups.length ? <div className="editorial-folders">{groups.map((group, index) => { const Icon = group.icon; return <details key={group.label} open={index === 0}><summary><Icon size={18} /><div><b>{group.label}</b><small>{group.entries.length}개 분류 · {group.count}개 기록</small></div><ChevronDown size={16} /></summary><div>{group.entries.map((entry) => <Link href={entry.href} key={`${group.label}-${entry.name}`}><Folder size={15} /><span>{entry.name}</span><small>{entry.count}</small><ArrowRight size={13} /></Link>)}</div></details>; })}</div> : <section className="editorial-empty"><FolderOpen size={22} /><h2>아직 공개된 카테고리가 없습니다</h2><p>새로운 주제가 정리되면 이곳에서 한눈에 둘러볼 수 있습니다.</p><Link href="/posts">전체 글 보기 <ArrowRight size={14} /></Link></section>}
       </main>
 
       <aside className="editorial-sidebar category-recent-sidebar">

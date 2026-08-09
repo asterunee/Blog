@@ -13,5 +13,5 @@ export function TableOfContents({ headings }: { headings: { title: string; id: s
     };
     onScroll(); addEventListener("scroll", onScroll, { passive: true }); return () => removeEventListener("scroll", onScroll);
   }, [headings]);
-  return <aside className="toc"><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><details open><summary>이 관측의 좌표</summary><nav>{headings.map((heading) => <a key={heading.id} className={active === heading.id ? "active" : ""} href={`#${heading.id}`}>{heading.title}</a>)}</nav></details></aside>;
+  return <aside className="toc"><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><details open><summary>이 글의 목차</summary><nav>{headings.map((heading) => <a key={heading.id} className={active === heading.id ? "active" : ""} href={`#${heading.id}`}>{heading.title}</a>)}</nav></details></aside>;
 }

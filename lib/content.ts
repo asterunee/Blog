@@ -25,7 +25,7 @@ export type Solution = z.infer<typeof solutionSchema> & { body: string; readingM
 const postSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
-  category: z.string(), tags: z.array(z.string()).default([]), series: z.string().default(""),
+  category: z.preprocess((value) => typeof value === "string" && value ? value : "uncategorized", z.string()), tags: z.array(z.string()).default([]), series: z.string().default(""),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), accentColor: z.string().default(""),
   seoTitle: z.string().default(""), seoDescription: z.string().default(""), canonicalUrl: z.string().default(""),
   showToc: z.boolean().default(true), featured: z.boolean().default(false), pinned: z.boolean().default(false), draft: z.boolean(),

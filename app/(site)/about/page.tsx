@@ -35,15 +35,15 @@ export default function AboutPage() {
         <Link href="/posts">작성한 글 보기 <ArrowRight size={15} /></Link>
       </div>
       <figure className="editorial-about-image">
-        <Image src="/images/earth-orbit.webp" fill priority sizes="(max-width: 780px) 100vw, 520px" alt="깊은 우주에서 바라본 푸른 지구와 보랏빛 항성" />
+        <Image src="/images/earth-orbit.webp" fill priority sizes="(max-width: 780px) 100vw, 520px" alt="어두운 배경에서 바라본 푸른 지구" />
         <figcaption><span>asterunee</span><small>{siteConfig.role}</small></figcaption>
       </figure>
     </header>
 
     <main className="page-shell editorial-about-body">
       <section className="editorial-about-story" aria-labelledby="about-story-title">
-        <div><span>이름에 대하여</span><h2 id="about-story-title">별과 달 사이에서 생각을 문장으로 옮깁니다.</h2></div>
-        <div><p><strong>aster</strong>의 별과 <strong>lune</strong>의 달 사이. asterunee는 개발하며 배운 것과 오래 붙잡은 생각을 한곳에서 나누기 위한 이름입니다.</p><p>정답을 빠르게 요약하기보다 왜 그런 질문이 생겼는지, 어떤 접근을 거쳐 이해하게 되었는지까지 설명합니다. 독자가 다음 생각으로 자연스럽게 이어갈 수 있는 글을 지향합니다.</p><blockquote>“{siteConfig.motto}”</blockquote></div>
+        <div><span>블로그에 대하여</span><h2 id="about-story-title">배운 것과 생각한 것을 읽기 좋은 글로 정리합니다.</h2></div>
+        <div><p>asterunee는 개발하며 배운 내용과 오래 붙잡은 생각을 한곳에서 나누는 개인 블로그입니다.</p><p>정답을 빠르게 요약하기보다 왜 그런 질문이 생겼는지, 어떤 접근을 거쳐 이해하게 되었는지까지 설명합니다. 독자가 다음 생각으로 자연스럽게 이어갈 수 있는 글을 지향합니다.</p><blockquote>“{siteConfig.motto}”</blockquote></div>
       </section>
 
       <section className="editorial-about-section">

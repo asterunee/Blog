@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpenText, Rss } from "lucide-react";
 import { PostCard } from "@/components/post-card";
 import { getPosts } from "@/lib/content";
+import { getCategoryName } from "@/lib/taxonomy";
 
 export const metadata: Metadata = {
   title: "전체 글",
@@ -25,7 +26,7 @@ export default function PostsPage() {
     </header>
 
     <div className="page-shell editorial-index-body">
-      {categories.length > 0 && <nav className="editorial-filter-bar" aria-label="카테고리 바로가기"><Link className="active" href="/posts">전체</Link>{categories.map(([category, count]) => <Link href={`/categories/${encodeURIComponent(category)}`} key={category}>{category}<span>{count}</span></Link>)}</nav>}
+      {categories.length > 0 && <nav className="editorial-filter-bar" aria-label="카테고리 바로가기"><Link className="active" href="/posts">전체</Link>{categories.map(([category, count]) => <Link href={`/categories/${encodeURIComponent(category)}`} key={category}>{getCategoryName(category)}<span>{count}</span></Link>)}</nav>}
 
       <div className="editorial-index-layout">
         <main>
@@ -35,7 +36,7 @@ export default function PostsPage() {
 
         <aside className="editorial-sidebar">
           <nav className="editorial-quick-links" aria-label="글 탐색"><Link href="/archive"><span>아카이브</span><ArrowRight size={14} /></Link><Link href="/categories"><span>카테고리</span><ArrowRight size={14} /></Link><Link href="/rss.xml"><span>RSS 구독</span><Rss size={14} /></Link></nav>
-          <section><h2>카테고리</h2>{categories.length ? <div className="editorial-sidebar-list">{categories.slice(0, 8).map(([category, count]) => <Link key={category} href={`/categories/${encodeURIComponent(category)}`}><span>{category}</span><small>{count}</small></Link>)}</div> : <p>글이 공개되면 카테고리가 표시됩니다.</p>}</section>
+          <section><h2>카테고리</h2>{categories.length ? <div className="editorial-sidebar-list">{categories.slice(0, 8).map(([category, count]) => <Link key={category} href={`/categories/${encodeURIComponent(category)}`}><span>{getCategoryName(category)}</span><small>{count}</small></Link>)}</div> : <p>글이 공개되면 카테고리가 표시됩니다.</p>}</section>
           {tags.length > 0 && <section><h2>태그</h2><div className="editorial-tag-list">{tags.slice(0, 12).map(([tag]) => <Link href={`/tags/${encodeURIComponent(tag)}`} key={tag}>#{tag}</Link>)}</div></section>}
         </aside>
       </div>

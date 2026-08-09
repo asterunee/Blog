@@ -7,7 +7,7 @@ import { profiles, siteConfig } from "@/lib/site";
 
 type SearchItem = { title: string; href: string; description: string; tags: string[] };
 const themeOptions = [
-  { id: "dark", label: "별밤", color: "#5ee7f7", icon: MoonStar },
+  { id: "dark", label: "다크", color: "#5ee7f7", icon: MoonStar },
   { id: "aurora", label: "오로라", color: "#72f1b8", icon: Palette },
   { id: "forest", label: "숲", color: "#86d293", icon: MoonStar },
   { id: "sunset", label: "노을", color: "#ff9f7a", icon: Sun },
@@ -90,9 +90,9 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
   return <>
     <div className="header-actions">
       <button className="icon-button search-trigger" onClick={() => setPaletteOpen(true)} aria-label="검색 열기"><Search size={17} /><span>⌘K</span></button>
-      <button className="icon-button" onClick={() => setLanguage((value) => value === "ko" ? "en" : "ko")} aria-label={`언어: ${language === "ko" ? "한국어" : "English"}`} title="한국어 / English"><Languages size={18} /></button>
+      <button className="icon-button language-trigger" onClick={() => setLanguage((value) => value === "ko" ? "en" : "ko")} aria-label={`언어: ${language === "ko" ? "한국어" : "English"}`} title="한국어 / English"><Languages size={18} /></button>
       <div className="theme-picker">
-        <button className="icon-button" onClick={() => setThemeMenuOpen((value) => !value)} aria-expanded={themeMenuOpen} aria-label={`테마: ${activeTheme.label}`} title={`테마: ${activeTheme.label}`}><ActiveThemeIcon size={18} /></button>
+        <button className="icon-button theme-trigger" onClick={() => setThemeMenuOpen((value) => !value)} aria-expanded={themeMenuOpen} aria-label={`테마: ${activeTheme.label}`} title={`테마: ${activeTheme.label}`}><ActiveThemeIcon size={18} /><span>테마 · {activeTheme.label}</span></button>
         {themeMenuOpen && <div className="theme-menu" role="menu" aria-label="테마 선택">
           <p>화면 테마</p>
           {themeOptions.map((option) => <button key={option.id} role="menuitemradio" aria-checked={theme === option.id} onClick={() => { setTheme(option.id); setThemeMenuOpen(false); }}><i style={{ background: option.color }} /><span>{option.label}</span>{theme === option.id && <Check size={14} />}</button>)}

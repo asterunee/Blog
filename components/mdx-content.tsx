@@ -5,7 +5,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import Image from "next/image";
-import { ArrowDownToLine, ArrowUpRight, Play } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, Check, Circle, Play } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import { isValidElement, type CSSProperties, type ReactElement, type ReactNode } from "react";
 
@@ -80,6 +80,37 @@ function GalleryImage({ image, alt, caption }: { image?: string | null; alt: str
   return <figure className="mdx-gallery-image"><div><Image src={image} alt={alt} fill sizes="(max-width: 600px) 100vw, 380px" /></div>{caption && <figcaption>{caption}</figcaption>}</figure>;
 }
 
+function CodeSnippet({ filename, language = "text", highlights, code }: { filename?: string; language?: string; highlights?: string; code: string }) {
+  return <CodeBlock code={code} filename={filename || "snippet"} language={language} highlights={highlights || ""} />;
+}
+
+function Checklist({ title, items }: { title?: string; items: string }) {
+  const rows = items.split("\n").map((item) => item.trim()).filter(Boolean);
+  return <section className="mdx-checklist">{title && <h3>{title}</h3>}<ul>{rows.map((item, index) => {
+    const done = /^\[x\]\s*/i.test(item);
+    const label = item.replace(/^\[[ x]\]\s*/i, "");
+    return <li className={done ? "done" : ""} key={`${label}-${index}`}>{done ? <Check size={15} /> : <Circle size={14} />}<span>{label}</span></li>;
+  })}</ul></section>;
+}
+
+function Comparison({ leftTitle, leftBody, rightTitle, rightBody }: { leftTitle: string; leftBody: string; rightTitle: string; rightBody: string }) {
+  return <section className="mdx-comparison"><article><h3>{leftTitle}</h3><p>{leftBody}</p></article><article><h3>{rightTitle}</h3><p>{rightBody}</p></article></section>;
+}
+
+type StatItem = { label: string; value: string; note?: string };
+
+function StatGrid({ items }: { items: StatItem[] }) {
+  return <section className="mdx-stat-grid">{items.map((item, index) => <article key={`${item.label}-${index}`}><strong>{item.value}</strong><span>{item.label}</span>{item.note && <small>{item.note}</small>}</article>)}</section>;
+}
+
+function AudioPlayer({ title, url, caption }: { title: string; url: string; caption?: string }) {
+  return <figure className="mdx-audio"><figcaption><strong>{title}</strong>{caption && <span>{caption}</span>}</figcaption><audio controls preload="metadata" src={safeHref(url)} /></figure>;
+}
+
+function SectionBreak({ label }: { label?: string }) {
+  return <div className="mdx-section-break" aria-hidden={!label}><span>{label}</span></div>;
+}
+
 export function MdxContent({ source }: { source: string }) {
-  return <MDXRemote source={source} components={{ pre: MdxPre, Callout, Details, PullQuote, ActionButton, LinkCard, YouTube, Figure, FileDownload, Badge, Gallery, GalleryImage }} options={{ mdxOptions: { remarkPlugins: [remarkGfm, remarkMath], rehypePlugins: [rehypeSlug, [rehypeAutolinkHeadings, { behavior: "wrap" }], rehypeKatex] } }} />;
+  return <MDXRemote source={source} components={{ pre: MdxPre, Callout, Details, PullQuote, ActionButton, LinkCard, YouTube, Figure, FileDownload, Badge, Gallery, GalleryImage, CodeSnippet, Checklist, Comparison, StatGrid, AudioPlayer, SectionBreak }} options={{ mdxOptions: { remarkPlugins: [remarkGfm, remarkMath], rehypePlugins: [rehypeSlug, [rehypeAutolinkHeadings, { behavior: "wrap" }], rehypeKatex] } }} />;
 }

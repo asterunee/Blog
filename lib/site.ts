@@ -5,7 +5,7 @@ export const siteConfig = {
   title: `${settings.siteName} — ${settings.tagline}`,
   description: settings.description,
   koreanSubtitle: settings.tagline,
-  englishSubtitle: "Notes gathered beneath distant stars",
+  englishSubtitle: "A personal blog about code, learning and everyday life",
   intro: settings.intro,
   sidebarIntro: settings.sidebarIntro,
   motto: settings.motto,
@@ -21,16 +21,7 @@ export const siteConfig = {
   defaultTheme: settings.defaultTheme,
   showJudgeSignals: settings.showJudgeSignals,
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-  navigation: [
-    { href: "/posts", ko: "글", en: "Posts" },
-    { href: "/categories", ko: "카테고리", en: "Categories" },
-    { href: "/solutions", ko: "풀이", en: "Solutions" },
-    { href: "/algorithms", ko: "알고리즘", en: "Algorithms" },
-    { href: "/tags", ko: "태그", en: "Tags" },
-    { href: "/archive", ko: "아카이브", en: "Archive" },
-    { href: "/log", ko: "기록", en: "Log" },
-    { href: "/about", ko: "소개", en: "About" },
-  ],
+  navigation: settings.navigation.filter((item) => item.visible).map((item) => ({ href: item.href, ko: item.label, en: item.labelEn })),
 } as const;
 
 export type Profile = { name: string; handle: string; url?: string };

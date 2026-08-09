@@ -147,6 +147,61 @@ const contentComponents = (directory: string, publicPath: string) => ({
     },
     forSpecificLocations: true,
   }),
+  CodeSnippet: block({
+    label: "코드 스니펫",
+    description: "파일명, 언어와 하이라이트 줄을 지정한 코드 블록을 넣습니다.",
+    schema: {
+      filename: fields.text({ label: "파일 이름", defaultValue: "snippet.ts", ...required }),
+      language: fields.text({ label: "언어", defaultValue: "typescript", ...required }),
+      highlights: fields.text({ label: "강조할 줄", description: "예: 1,3-5" }),
+      code: fields.text({ label: "코드", multiline: true, ...required }),
+    },
+  }),
+  Checklist: block({
+    label: "체크리스트",
+    description: "한 줄에 하나씩 항목을 입력해 체크리스트를 만듭니다.",
+    schema: {
+      title: fields.text({ label: "제목" }),
+      items: fields.text({ label: "항목", multiline: true, description: "완료 항목은 [x], 미완료 항목은 [ ]로 시작하세요.", ...required }),
+    },
+  }),
+  Comparison: block({
+    label: "두 항목 비교",
+    description: "선택지, 접근법 또는 장단점을 두 열로 비교합니다.",
+    schema: {
+      leftTitle: fields.text({ label: "왼쪽 제목", ...required }),
+      leftBody: fields.text({ label: "왼쪽 내용", multiline: true, ...required }),
+      rightTitle: fields.text({ label: "오른쪽 제목", ...required }),
+      rightBody: fields.text({ label: "오른쪽 내용", multiline: true, ...required }),
+    },
+  }),
+  StatGrid: block({
+    label: "수치 요약",
+    description: "핵심 수치나 정보를 2~4개 항목으로 정리합니다.",
+    schema: {
+      items: fields.array(fields.object({
+        label: fields.text({ label: "이름", ...required }),
+        value: fields.text({ label: "값", ...required }),
+        note: fields.text({ label: "설명" }),
+      }), { label: "항목", validation: { length: { min: 2, max: 4 } }, itemLabel: (props) => props.fields.label.value || "새 항목" }),
+    },
+  }),
+  AudioPlayer: block({
+    label: "오디오",
+    description: "오디오 파일이나 팟캐스트 주소를 삽입합니다.",
+    schema: {
+      title: fields.text({ label: "제목", ...required }),
+      url: fields.url({ label: "오디오 URL", ...required }),
+      caption: fields.text({ label: "설명" }),
+    },
+  }),
+  SectionBreak: block({
+    label: "구분선과 소제목",
+    description: "긴 글의 흐름을 나누는 짧은 구분 문구를 넣습니다.",
+    schema: {
+      label: fields.text({ label: "구분 문구", ...required }),
+    },
+  }),
 });
 
 const bodyField = (directory: string, publicPath: string, description: string) => fields.mdx({
@@ -172,10 +227,25 @@ export default config({
     brand: { name: "asterunee studio" },
     navigation: {
       "글 작성": ["posts", "solutions", "logs"],
+      "분류 관리": ["categories"],
       "블로그 관리": ["site"],
     },
   },
   collections: {
+    categories: collection({
+      label: "카테고리",
+      slugField: "name",
+      path: "content/categories/*",
+      entryLayout: "form",
+      format: "json",
+      columns: ["name", "order", "visible"],
+      schema: {
+        name: fields.slug({ name: { label: "카테고리 이름", validation: { isRequired: true } }, slug: { label: "카테고리 URL", description: "영문 소문자와 하이픈을 권장합니다." } }),
+        description: fields.text({ label: "카테고리 설명", multiline: true, description: "카테고리 페이지와 목록에 표시됩니다." }),
+        order: fields.integer({ label: "정렬 순서", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
+        visible: fields.checkbox({ label: "목록에 표시", defaultValue: true }),
+      },
+    }),
     posts: collection({
       label: "일반 글",
       slugField: "title",
@@ -187,7 +257,7 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: "글 제목", validation: { isRequired: true } }, slug: { label: "URL slug", description: "영문 소문자와 하이픈을 권장합니다." } }),
         description: fields.text({ label: "글 요약", multiline: true, description: "목록과 공유 카드에 표시됩니다.", ...required }),
-        category: fields.text({ label: "카테고리", description: "원하는 이름을 직접 입력하세요. 예: 개발, 여행, 음악", defaultValue: "미분류", ...required }),
+        category: fields.relationship({ label: "카테고리", collection: "categories", description: "분류 관리에서 카테고리를 먼저 만들 수 있습니다." }),
         series: fields.text({ label: "시리즈", description: "연재가 아니라면 비워 두세요." }),
         tags: fields.array(fields.text({ label: "태그" }), { label: "태그", itemLabel: (props) => props.value }),
         date: fields.date({ label: "작성일", defaultValue: today, ...required }),
@@ -239,7 +309,7 @@ export default config({
         coverAlt: fields.text({ label: "대표 이미지 설명" }),
         featured: fields.checkbox({ label: "대표 풀이", defaultValue: false }),
         draft: fields.checkbox({ label: "초안", description: "해제한 풀이만 운영 사이트에 공개됩니다.", defaultValue: true }),
-        body: bodyField("public/images/solutions", "/images/solutions/", "관찰, 도출 과정, 증명, 복잡도와 구현을 기록하고 콜아웃, 영상, 갤러리 같은 콘텐츠 블록을 활용하세요."),
+        body: bodyField("public/images/solutions", "/images/solutions/", "접근 과정, 증명, 복잡도와 구현을 기록하고 콜아웃, 영상, 갤러리 같은 콘텐츠 블록을 활용하세요."),
       },
     }),
     logs: collection({
@@ -291,8 +361,14 @@ export default config({
         backgroundStrength: fields.integer({ label: "배경 이미지 강도(%)", defaultValue: 16, validation: { isRequired: true, min: 0, max: 60 } }),
         backgroundPattern: fields.select({ label: "배경 효과", options: [{ label: "별빛", value: "stars" }, { label: "오로라", value: "aurora" }, { label: "잔잔함", value: "quiet" }, { label: "효과 없음", value: "none" }], defaultValue: "stars" }),
         accentColor: fields.text({ label: "사이트 강조 색", description: "#RRGGBB 형식", defaultValue: "#5ee7f7", validation: { isRequired: true, pattern: { regex: /^#[0-9a-fA-F]{6}$/, message: "#RRGGBB 형식으로 입력하세요." } } }),
-        defaultTheme: fields.select({ label: "기본 테마", options: [{ label: "별밤", value: "dark" }, { label: "오로라", value: "aurora" }, { label: "숲", value: "forest" }, { label: "노을", value: "sunset" }, { label: "종이", value: "paper" }, { label: "밝게", value: "light" }], defaultValue: "dark" }),
+        defaultTheme: fields.select({ label: "기본 테마", options: [{ label: "다크", value: "dark" }, { label: "오로라", value: "aurora" }, { label: "포레스트", value: "forest" }, { label: "선셋", value: "sunset" }, { label: "페이퍼", value: "paper" }, { label: "라이트", value: "light" }], defaultValue: "dark" }),
         showJudgeSignals: fields.checkbox({ label: "홈에 PS 활동 표시", defaultValue: true }),
+        navigation: fields.array(fields.object({
+          label: fields.text({ label: "메뉴 이름", ...required }),
+          labelEn: fields.text({ label: "영문 이름", ...required }),
+          href: fields.text({ label: "이동 경로", description: "예: /posts", ...required }),
+          visible: fields.checkbox({ label: "메뉴에 표시", defaultValue: true }),
+        }), { label: "사이드바 메뉴", description: "끌어서 순서를 바꾸고 표시 여부를 설정할 수 있습니다.", itemLabel: (props) => props.fields.label.value || "새 메뉴" }),
       },
     }),
   },
