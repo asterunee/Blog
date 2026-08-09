@@ -30,7 +30,6 @@ export default function AboutPage() {
     <header className="page-shell editorial-about-hero">
       <div className="editorial-about-copy">
         <nav className="page-breadcrumb" aria-label="현재 위치"><Link href="/">홈</Link><span>/</span><span>소개</span></nav>
-        <span className="editorial-kicker">소개</span>
         <h1>안녕하세요.<br /><span>asterunee입니다.</span></h1>
         <p>개발과 알고리즘을 공부하며 발견한 것, 오래 붙잡은 생각과 일상의 장면을 읽기 좋은 글로 전합니다.</p>
         <Link href="/posts">작성한 글 보기 <ArrowRight size={15} /></Link>
@@ -43,7 +42,7 @@ export default function AboutPage() {
 
     <main className="page-shell editorial-about-body">
       <section className="editorial-about-story" aria-labelledby="about-story-title">
-        <div><span>이름에 대하여</span><h2 id="about-story-title">별과 달 사이에서<br />생각을 문장으로<br />옮깁니다.</h2></div>
+        <div><span>이름에 대하여</span><h2 id="about-story-title">별과 달 사이에서 생각을 문장으로 옮깁니다.</h2></div>
         <div><p><strong>aster</strong>의 별과 <strong>lune</strong>의 달 사이. asterunee는 개발하며 배운 것과 오래 붙잡은 생각을 한곳에서 나누기 위한 이름입니다.</p><p>정답을 빠르게 요약하기보다 왜 그런 질문이 생겼는지, 어떤 접근을 거쳐 이해하게 되었는지까지 설명합니다. 독자가 다음 생각으로 자연스럽게 이어갈 수 있는 글을 지향합니다.</p><blockquote>“{siteConfig.motto}”</blockquote></div>
       </section>
 

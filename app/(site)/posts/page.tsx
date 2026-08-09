@@ -19,7 +19,7 @@ export default function PostsPage() {
     <header className="page-shell editorial-page-header">
       <nav className="page-breadcrumb" aria-label="현재 위치"><Link href="/">홈</Link><span>/</span><span>전체 글</span></nav>
       <div className="editorial-title-row">
-        <div><span className="editorial-kicker">글</span><h1>전체 글</h1></div>
+        <div><h1>전체 글</h1></div>
         <p>개발과 알고리즘, 도구와 배움에 관해 직접 경험하고 이해한 내용을 씁니다.</p>
       </div>
     </header>

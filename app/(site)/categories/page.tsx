@@ -30,7 +30,7 @@ export default function CategoriesPage() {
   return <div className="editorial-page">
     <header className="page-shell editorial-page-header">
       <nav className="page-breadcrumb" aria-label="현재 위치"><Link href="/">홈</Link><span>/</span><span>카테고리</span></nav>
-      <div className="editorial-title-row"><div><span className="editorial-kicker">분류</span><h1>카테고리</h1></div><p>글, 문제 풀이와 짧은 기록을 관심 있는 주제부터 차례로 둘러보세요.</p></div>
+      <div className="editorial-title-row"><div><h1>카테고리</h1></div><p>글, 문제 풀이와 짧은 기록을 관심 있는 주제부터 차례로 둘러보세요.</p></div>
     </header>
 
     <div className="page-shell editorial-category-layout">
