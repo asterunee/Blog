@@ -11,6 +11,8 @@ export const siteConfig = {
   navigation: [
     { href: "/solutions", ko: "풀이", en: "Solutions" },
     { href: "/algorithms", ko: "알고리즘", en: "Algorithms" },
+    { href: "/tags", ko: "태그", en: "Tags" },
+    { href: "/archive", ko: "아카이브", en: "Archive" },
     { href: "/library", ko: "라이브러리", en: "Library" },
     { href: "/log", ko: "기록", en: "Log" },
     { href: "/about", ko: "소개", en: "About" },

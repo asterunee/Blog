@@ -16,6 +16,24 @@ npm run dev
 
 ## 새 풀이 글 작성과 게시
 
+### 웹 편집기
+
+개발 서버 또는 배포 사이트의 `/keystatic`에서 PS 풀이와 관측 일지를 직접 작성할 수 있습니다. 로컬 개발에서는 저장 버튼이 `content/solutions`와 `content/log`의 MDX 파일을 바로 수정합니다.
+
+production에서는 GitHub 모드를 사용합니다. GitHub 저장소를 만든 뒤 `/keystatic`의 안내에 따라 GitHub App을 생성하고 다음 값을 Vercel 환경변수에 등록하세요.
+
+```env
+KEYSTATIC_GITHUB_CLIENT_ID=
+KEYSTATIC_GITHUB_CLIENT_SECRET=
+KEYSTATIC_SECRET=
+NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
+NEXT_PUBLIC_KEYSTATIC_STORAGE=github
+```
+
+GitHub 저장소의 write 권한이 있는 사용자만 로그인하고 글을 저장할 수 있습니다. 저장된 글은 Git 커밋으로 남으며 `draft`를 해제하면 RSS와 sitemap에도 포함됩니다.
+
+### 명령줄
+
 ```bash
 npm run new:solution -- problem-slug "문제 제목"
 ```
@@ -70,6 +88,10 @@ npx vercel --prod
 ```
 
 실제 production 배포는 Vercel 계정 인증과 대상 프로젝트 선택이 필요합니다. 배포 뒤 도메인으로 `NEXT_PUBLIC_SITE_URL`을 갱신해 canonical, Open Graph, RSS, sitemap URL을 정확히 맞추세요.
+
+### GitHub 자동 배포
+
+`.github/workflows/ci.yml`은 `main` push에서 품질 검사를 통과한 뒤 Vercel production을 배포합니다. GitHub 저장소의 Actions secrets에 `VERCEL_TOKEN`을 등록해야 합니다. Vercel 조직·프로젝트 ID는 workflow에 현재 `asterunee` 프로젝트 값으로 연결되어 있습니다.
 
 ## 구조
 

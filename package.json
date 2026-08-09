@@ -14,6 +14,9 @@
     "new:solution": "node scripts/new-solution.mjs"
   },
   "dependencies": {
+    "@keystatic/core": "^0.6.4",
+    "@keystatic/next": "^5.0.4",
+    "@markdoc/markdoc": "^0.5.9",
     "@tailwindcss/postcss": "latest",
     "gray-matter": "latest",
     "katex": "latest",
@@ -22,12 +25,12 @@
     "next-mdx-remote": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "reading-time": "latest",
     "rehype-autolink-headings": "latest",
     "rehype-katex": "latest",
     "rehype-slug": "latest",
     "remark-gfm": "latest",
     "remark-math": "latest",
-    "reading-time": "latest",
     "shiki": "latest",
     "zod": "latest"
   },

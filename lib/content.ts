@@ -15,19 +15,41 @@ const solutionSchema = z.object({
 
 export type Solution = z.infer<typeof solutionSchema> & { body: string; readingMinutes: number };
 
+const logSchema = z.object({
+  title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
+  date: z.string(), updated: z.string(), author: z.literal("asterunee"),
+  type: z.string(), tags: z.array(z.string()).default([]), draft: z.boolean(),
+});
+
+export type LogPost = z.infer<typeof logSchema> & { body: string; readingMinutes: number };
+
 export function getSolutions(includeDrafts = process.env.NODE_ENV !== "production"): Solution[] {
   const dir = path.join(process.cwd(), "content/solutions");
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir).filter((file) => file.endsWith(".mdx")).map((file) => {
     const raw = fs.readFileSync(path.join(dir, file), "utf8");
     const { data, content } = matter(raw);
-    const parsed = solutionSchema.safeParse(data);
+    const parsed = solutionSchema.safeParse({ ...data, slug: data.slug || file.replace(/\.mdx$/, "") });
     if (!parsed.success) throw new Error(`Invalid frontmatter in ${file}: ${parsed.error.message}`);
     return { ...parsed.data, body: content, readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)) };
   }).filter((post) => includeDrafts || !post.draft).sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export function getSolution(slug: string) { return getSolutions().find((post) => post.slug === slug); }
+
+export function getLogs(includeDrafts = process.env.NODE_ENV !== "production"): LogPost[] {
+  const dir = path.join(process.cwd(), "content/log");
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).filter((file) => file.endsWith(".mdx")).map((file) => {
+    const raw = fs.readFileSync(path.join(dir, file), "utf8");
+    const { data, content } = matter(raw);
+    const parsed = logSchema.safeParse({ ...data, slug: data.slug || file.replace(/\.mdx$/, "") });
+    if (!parsed.success) throw new Error(`Invalid frontmatter in ${file}: ${parsed.error.message}`);
+    return { ...parsed.data, body: content, readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)) };
+  }).filter((post) => includeDrafts || !post.draft).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getLog(slug: string) { return getLogs().find((post) => post.slug === slug); }
 
 export function extractHeadings(source: string) {
   return [...source.matchAll(/^##\s+(.+)$/gm)].map((match) => ({

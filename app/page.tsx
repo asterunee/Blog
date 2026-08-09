@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Folder, Radio, Search } from "lucide-react";
-import { getSolutions } from "@/lib/content";
-import { logEntries } from "@/lib/logs";
+import { getLogs, getSolutions } from "@/lib/content";
 import { JudgeSignals } from "@/components/judge-signals";
 
 export default function Home() {
   const posts = getSolutions();
+  const logs = getLogs();
   const tags = [...new Set(posts.flatMap((post) => post.tags))];
   return <div className="blog-home">
     <div className="blog-main-column">
@@ -24,7 +24,7 @@ export default function Home() {
       </section>
 
       <header className="feed-header notes-heading"><div><span className="section-index">FIELD NOTES</span><h2>관측 일지</h2></div><Link href="/log">전체 기록 <ArrowRight size={15} /></Link></header>
-      <section className="compact-notes">{logEntries.map((entry) => <Link href="/log" key={entry.slug}><time>{entry.date}</time><div><span>{entry.type}</span><h3>{entry.title}</h3><p>{entry.description}</p></div></Link>)}</section>
+      <section className="compact-notes">{logs.map((entry) => <Link href={`/log/${entry.slug}`} key={entry.slug}><time>{entry.date}</time><div><span>{entry.type}</span><h3>{entry.title}</h3><p>{entry.description}</p></div></Link>)}</section>
     </div>
 
     <aside className="blog-widgets">
