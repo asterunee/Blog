@@ -8,7 +8,7 @@ export function Footer() {
     <div><Link href="/" className="footer-brand">{siteConfig.name}</Link><p>{siteConfig.motto}</p></div>
     <div className="footer-links">
       {profiles.map((profile) => profile.url ? <a key={profile.name} href={profile.url} target="_blank" rel="noreferrer">{profile.name}</a> : <span key={profile.name} title="URL을 설정해 주세요">{profile.name}</span>)}
-      <Link href="/rss.xml">RSS</Link><Link href="/sitemap.xml">Sitemap</Link>
+      <Link href="/rss.xml">RSS 구독</Link><Link href="/sitemap.xml">Sitemap</Link><Link href="/keystatic" rel="nofollow">Admin</Link>
     </div>
-  </div><div className="footer-meta"><span>© 2026 {siteConfig.name}</span><span>Last updated · {latest || "새 기록을 기다리는 중"}</span></div></footer>;
+  </div><div className="footer-meta"><span>© 2026 {siteConfig.name}</span><span>Last updated · {latest || "새 글을 준비하는 중"}</span></div></footer>;
 }

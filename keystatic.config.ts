@@ -1,4 +1,5 @@
 import { collection, config, fields, singleton } from "@keystatic/core";
+import { block, inline, repeating, wrapper } from "@keystatic/core/content-components";
 
 const githubStorage = { kind: "github" as const, repo: "asterunee/Blog" as const, branchPrefix: "content/" };
 const localStorage = { kind: "local" as const };
@@ -21,9 +22,137 @@ const richEditorOptions = {
   codeBlock: true,
 };
 
+const contentComponents = (directory: string, publicPath: string) => ({
+  Callout: wrapper({
+    label: "콜아웃",
+    description: "정보, 팁, 주의, 성공 메시지를 강조합니다.",
+    schema: {
+      variant: fields.select({
+        label: "종류",
+        options: [
+          { label: "정보", value: "info" },
+          { label: "팁", value: "tip" },
+          { label: "주의", value: "warning" },
+          { label: "성공", value: "success" },
+        ],
+        defaultValue: "info",
+      }),
+      title: fields.text({ label: "제목" }),
+    },
+  }),
+  Details: wrapper({
+    label: "접이식 내용",
+    description: "정답, 부연 설명처럼 필요할 때 펼쳐 보는 내용을 만듭니다.",
+    schema: {
+      title: fields.text({ label: "펼치기 제목", defaultValue: "자세히 보기", ...required }),
+      open: fields.checkbox({ label: "처음부터 펼치기", defaultValue: false }),
+    },
+  }),
+  PullQuote: wrapper({
+    label: "강조 인용",
+    description: "본문에서 중요한 문장이나 인용을 크게 보여 줍니다.",
+    schema: {
+      attribution: fields.text({ label: "출처/이름" }),
+      sourceUrl: fields.url({ label: "출처 링크" }),
+    },
+  }),
+  ActionButton: block({
+    label: "버튼",
+    description: "독자가 이동할 수 있는 강조 링크를 넣습니다.",
+    schema: {
+      label: fields.text({ label: "버튼 문구", defaultValue: "자세히 보기", ...required }),
+      url: fields.url({ label: "이동 URL", ...required }),
+      variant: fields.select({
+        label: "모양",
+        options: [
+          { label: "강조", value: "primary" },
+          { label: "테두리", value: "outline" },
+          { label: "텍스트", value: "text" },
+        ],
+        defaultValue: "primary",
+      }),
+      newTab: fields.checkbox({ label: "새 탭에서 열기", defaultValue: false }),
+    },
+  }),
+  LinkCard: block({
+    label: "링크 카드",
+    description: "참고 자료, 프로젝트, 관련 글을 카드로 소개합니다.",
+    schema: {
+      title: fields.text({ label: "제목", ...required }),
+      description: fields.text({ label: "설명", multiline: true }),
+      url: fields.url({ label: "URL", ...required }),
+      eyebrow: fields.text({ label: "작은 분류", defaultValue: "RELATED" }),
+    },
+  }),
+  YouTube: block({
+    label: "YouTube 영상",
+    description: "영상 주소의 ID를 입력해 반응형 플레이어를 삽입합니다.",
+    schema: {
+      videoId: fields.text({ label: "YouTube 영상 ID", description: "예: dQw4w9WgXcQ", ...required }),
+      title: fields.text({ label: "영상 제목", defaultValue: "YouTube 영상", ...required }),
+      caption: fields.text({ label: "설명" }),
+    },
+  }),
+  Figure: block({
+    label: "캡션 이미지",
+    description: "설명과 출처가 있는 이미지를 넣습니다.",
+    schema: {
+      image: fields.image({ label: "이미지", directory, publicPath }),
+      alt: fields.text({ label: "대체 텍스트", description: "이미지 내용을 설명하세요.", ...required }),
+      caption: fields.text({ label: "캡션", multiline: true }),
+      credit: fields.text({ label: "출처/크레딧" }),
+    },
+  }),
+  FileDownload: block({
+    label: "다운로드",
+    description: "문서, 소스 코드 등 외부 파일 다운로드 링크를 넣습니다.",
+    schema: {
+      label: fields.text({ label: "파일 이름", ...required }),
+      url: fields.url({ label: "파일 URL", ...required }),
+      detail: fields.text({ label: "형식·용량 등 설명" }),
+    },
+  }),
+  Badge: inline({
+    label: "인라인 배지",
+    description: "문장 안에 상태나 짧은 키워드를 표시합니다.",
+    schema: {
+      label: fields.text({ label: "문구", defaultValue: "NEW", ...required }),
+      tone: fields.select({
+        label: "색상",
+        options: [
+          { label: "강조", value: "accent" },
+          { label: "정보", value: "info" },
+          { label: "성공", value: "success" },
+          { label: "주의", value: "warning" },
+        ],
+        defaultValue: "accent",
+      }),
+    },
+  }),
+  Gallery: repeating({
+    label: "이미지 갤러리",
+    description: "여러 이미지를 2~3열 갤러리로 배치합니다.",
+    children: ["GalleryImage"],
+    validation: { children: { min: 1, max: 12 } },
+    schema: {
+      columns: fields.integer({ label: "열 수", defaultValue: 2, validation: { min: 2, max: 3 } }),
+    },
+  }),
+  GalleryImage: block({
+    label: "갤러리 이미지",
+    schema: {
+      image: fields.image({ label: "이미지", directory, publicPath }),
+      alt: fields.text({ label: "대체 텍스트", ...required }),
+      caption: fields.text({ label: "짧은 캡션" }),
+    },
+    forSpecificLocations: true,
+  }),
+});
+
 const bodyField = (directory: string, publicPath: string, description: string) => fields.mdx({
   label: "본문",
   description,
+  components: contentComponents(directory, publicPath),
   options: {
     ...richEditorOptions,
     image: {
@@ -74,7 +203,7 @@ export default config({
         featured: fields.checkbox({ label: "대표 글", defaultValue: false }),
         pinned: fields.checkbox({ label: "목록 상단 고정", defaultValue: false }),
         draft: fields.checkbox({ label: "초안", description: "해제한 글만 운영 사이트에 공개됩니다.", defaultValue: true }),
-        body: bodyField("public/images/posts", "/images/posts/", "제목, 표, 인용문, 링크, 코드 블록과 이미지를 자유롭게 사용할 수 있습니다."),
+        body: bodyField("public/images/posts", "/images/posts/", "기본 서식과 이미지뿐 아니라 콜아웃, 갤러리, 영상, 링크 카드 등 삽입 메뉴의 콘텐츠 블록을 사용할 수 있습니다."),
       },
     }),
     solutions: collection({
@@ -110,7 +239,7 @@ export default config({
         coverAlt: fields.text({ label: "대표 이미지 설명" }),
         featured: fields.checkbox({ label: "대표 풀이", defaultValue: false }),
         draft: fields.checkbox({ label: "초안", description: "해제한 풀이만 운영 사이트에 공개됩니다.", defaultValue: true }),
-        body: bodyField("public/images/solutions", "/images/solutions/", "관찰, 도출 과정, 증명, 복잡도, 구현과 디버깅을 기록하세요."),
+        body: bodyField("public/images/solutions", "/images/solutions/", "관찰, 도출 과정, 증명, 복잡도와 구현을 기록하고 콜아웃, 영상, 갤러리 같은 콘텐츠 블록을 활용하세요."),
       },
     }),
     logs: collection({
@@ -135,7 +264,7 @@ export default config({
         coverAlt: fields.text({ label: "이미지 설명" }),
         featured: fields.checkbox({ label: "대표 기록", defaultValue: false }),
         draft: fields.checkbox({ label: "초안", defaultValue: true }),
-        body: bodyField("public/images/log", "/images/log/", "짧은 메모부터 긴 회고까지 자유롭게 작성하세요."),
+        body: bodyField("public/images/log", "/images/log/", "짧은 메모부터 긴 회고까지 쓰고 이미지, 링크 카드, 인용, 영상 같은 콘텐츠 블록을 활용하세요."),
       },
     }),
   },

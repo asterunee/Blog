@@ -1,9 +1,9 @@
 {
   "siteName": "asterunee",
   "tagline": "별과 달 사이의 기록",
-  "description": "코드와 배움, 생각과 일상을 기록하는 개인 블로그",
-  "intro": "코드와 배움, 생각과 일상에서 발견한 것들.",
-  "sidebarIntro": "코드와 배움, 생각과 일상의 조각을 차분히 남깁니다.",
+  "description": "개발과 알고리즘, 기술과 일상에서 발견한 이야기를 나누는 블로그",
+  "intro": "개발과 알고리즘, 배움과 일상에서 발견한 이야기를 나눕니다.",
+  "sidebarIntro": "개발과 알고리즘, 배움과 일상의 이야기를 함께 나눕니다.",
   "motto": "Observe deeply. Write honestly.",
   "supportingLine": "Thoughts gathered across an endless night.",
   "role": "Developer, Competitive Programmer & Writer",

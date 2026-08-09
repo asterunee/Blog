@@ -3,10 +3,12 @@ import { extractHeadings, getLogs, getPosts, getSolutions, searchSolutions } fro
 import { siteSettings, siteThemes } from "@/lib/settings";
 
 describe("content pipeline", () => {
-  it("starts without seeded or demo content", () => {
-    expect(getPosts(true)).toHaveLength(0);
-    expect(getSolutions(true)).toHaveLength(0);
-    expect(getLogs(true)).toHaveLength(0);
+  it("parses Keystatic content and keeps drafts out of the public feed", () => {
+    const draftsIncluded = getPosts(true);
+    expect(draftsIncluded.every((post) => /^\d{4}-\d{2}-\d{2}$/.test(post.date))).toBe(true);
+    expect(getPosts(false).every((post) => !post.draft)).toBe(true);
+    expect(getSolutions(false).every((post) => !post.draft)).toBe(true);
+    expect(getLogs(false).every((post) => !post.draft)).toBe(true);
   });
 
   it("keeps empty solution search stable", () => {

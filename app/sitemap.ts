@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages = [
     "",
     "/posts",
+    "/categories",
     "/solutions",
     "/algorithms",
     "/tags",
@@ -58,6 +59,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  const categories = [...new Set(articles.map((post) => post.category))].map((category) => ({
+    url: `${siteConfig.url}/categories/${encodeURIComponent(category)}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
+
   const judges = [...new Set(solutions.map((post) => post.judge))].map((judge) => ({
     url: `${siteConfig.url}/judge/${encodeURIComponent(judge)}`,
     lastModified: new Date(),
@@ -65,5 +73,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...pages, ...entries, ...tags, ...judges];
+  return [...pages, ...entries, ...categories, ...tags, ...judges];
 }

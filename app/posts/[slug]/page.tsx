@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight, Orbit } from "lucide-react";
 import { MdxContent } from "@/components/mdx-content";
 import { TableOfContents } from "@/components/toc";
 import { extractHeadings, getPost, getPosts } from "@/lib/content";
+import { siteConfig } from "@/lib/site";
 
 export function generateStaticParams() { return getPosts(false).map((post) => ({ slug: post.slug })); }
 
@@ -28,6 +29,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) notFound();
+  const all = getPosts();
+  const index = all.findIndex((entry) => entry.slug === slug);
+  const prev = all[index + 1];
+  const next = all[index - 1];
+  const related = all.filter((entry) => entry.slug !== slug && entry.category === post.category).slice(0, 3);
   const headings = extractHeadings(post.body);
   const showToc = post.showToc && headings.length > 0;
   const articleStyle = post.accentColor ? { "--cyan": post.accentColor } as CSSProperties : undefined;
@@ -35,7 +41,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return <div className="article-shell" style={articleStyle}>
     <header className="article-header">
       <Link href="/posts" className="back-link"><ArrowLeft size={15} /> 모든 글</Link>
-      <p>{post.category} · {post.date}{post.series ? ` · ${post.series}` : ""}</p>
+      <p><Link href={`/categories/${encodeURIComponent(post.category)}`}>{post.category}</Link> · {post.date}{post.series ? ` · ${post.series}` : ""}</p>
       <h1>{post.title}</h1>
       <p className="article-description">{post.description}</p>
       <div className="tag-row">{post.tags.map((tag) => <Link href={`/tags/${tag}`} key={tag}>{tag}</Link>)}</div>
@@ -43,5 +49,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       {post.coverImage && <div className="article-cover"><Image src={post.coverImage} alt={post.coverAlt || ""} fill priority sizes="(max-width: 900px) 100vw, 820px" /></div>}
     </header>
     <div className={`article-layout${showToc ? "" : " without-toc"}`}>{showToc && <TableOfContents headings={headings} />}<article className="prose"><MdxContent source={post.body} /></article></div>
+    <aside className="article-author"><Orbit size={28} aria-hidden /><div><span>WRITTEN BY</span><h2>{post.author}</h2><p>{siteConfig.sidebarIntro}</p></div><Link href="/about">작성자 소개 <ArrowRight size={14} /></Link></aside>
+    {related.length > 0 && <section className="related-posts"><header><span className="section-index">KEEP READING</span><h2>같은 카테고리의 글</h2></header><div>{related.map((entry) => <Link href={`/posts/${entry.slug}`} key={entry.slug}><span>{entry.date} · {entry.readingMinutes} min</span><h3>{entry.title}</h3><p>{entry.description}</p></Link>)}</div></section>}
+    <nav className="post-nav">{prev ? <Link href={`/posts/${prev.slug}`}><span>이전 글</span><b><ArrowLeft size={15} /> {prev.title}</b></Link> : <span />}{next ? <Link href={`/posts/${next.slug}`}><span>다음 글</span><b>{next.title} <ArrowRight size={15} /></b></Link> : <span />}</nav>
   </div>;
 }

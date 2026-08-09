@@ -4,9 +4,14 @@ import matter from "gray-matter";
 import readingTime from "reading-time";
 import { z } from "zod";
 
+const contentDate = z.preprocess(
+  (value) => value instanceof Date ? value.toISOString().slice(0, 10) : value,
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD 형식의 날짜가 필요합니다."),
+);
+
 const solutionSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
-  date: z.string(), updated: z.string(), author: z.string().min(1),
+  date: contentDate, updated: contentDate, author: z.string().min(1),
   judge: z.string(), problemId: z.string(), problemUrl: z.string().url(),
   difficulty: z.number().int().nonnegative(), tier: z.string(), tags: z.array(z.string()).min(1),
   language: z.string().default("C++17"), solveTime: z.number().positive(), featured: z.boolean(), draft: z.boolean(),
@@ -19,7 +24,7 @@ export type Solution = z.infer<typeof solutionSchema> & { body: string; readingM
 
 const postSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
-  date: z.string(), updated: z.string(), author: z.string().min(1),
+  date: contentDate, updated: contentDate, author: z.string().min(1),
   category: z.string(), tags: z.array(z.string()).default([]), series: z.string().default(""),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), accentColor: z.string().default(""),
   seoTitle: z.string().default(""), seoDescription: z.string().default(""), canonicalUrl: z.string().default(""),
@@ -30,7 +35,7 @@ export type BlogPost = z.infer<typeof postSchema> & { body: string; readingMinut
 
 const logSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
-  date: z.string(), updated: z.string(), author: z.string().min(1),
+  date: contentDate, updated: contentDate, author: z.string().min(1),
   type: z.string(), tags: z.array(z.string()).default([]), mood: z.string().default(""), location: z.string().default(""),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), featured: z.boolean().default(false), draft: z.boolean(),
 });
