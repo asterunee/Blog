@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { extractHeadings, getLogs, getPosts, getSolutions, searchSolutions } from "@/lib/content";
+import { extractHeadings, getCustomPosts, getLogs, getPosts, getSolutions, searchSolutions } from "@/lib/content";
+import { customContentSections } from "@/lib/editor-settings";
 import { siteSettings, siteThemes } from "@/lib/settings";
+import { getManagedAlgorithms } from "@/lib/taxonomy";
 
 describe("content pipeline", () => {
   it("parses Keystatic content and keeps drafts out of the public feed", () => {
@@ -26,5 +28,17 @@ describe("content pipeline", () => {
     expect(siteSettings.siteName).toBe("asterunee");
     expect(siteThemes).toContain(siteSettings.defaultTheme);
     expect(siteSettings.backgroundStrength).toBeGreaterThanOrEqual(0);
+  });
+
+  it("loads administrator-managed algorithms in a stable order", () => {
+    const algorithms = getManagedAlgorithms();
+    expect(algorithms.length).toBeGreaterThan(0);
+    expect(algorithms.some((algorithm) => algorithm.slug === "graph" && algorithm.name === "그래프")).toBe(true);
+    expect(algorithms.map((algorithm) => algorithm.order)).toEqual([...algorithms.map((algorithm) => algorithm.order)].sort((a, b) => a - b));
+  });
+
+  it("keeps custom writer sections and their empty content source safe", () => {
+    expect(customContentSections).toEqual([]);
+    expect(getCustomPosts(false)).toEqual([]);
   });
 });

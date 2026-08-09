@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { getLogs, getPosts, getSolutions } from "@/lib/content";
-import { getManagedCategories, getCategoryName, getContentTypeName } from "@/lib/taxonomy";
+import { getAllContentEntries } from "@/lib/content-index";
+import { getManagedCategories, getCategoryName } from "@/lib/taxonomy";
 
 export function generateStaticParams() {
   return [...new Set([
-    ...getPosts(false).map((post) => post.category),
-    ...getSolutions(false).map((post) => post.category),
-    ...getLogs(false).map((post) => post.category),
+    ...getAllContentEntries(false).map((post) => post.category),
     ...getManagedCategories().map((category) => category.slug),
   ])].map((category) => ({ category }));
 }
@@ -22,11 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
   const { category } = await params;
-  const entries = [
-    ...getPosts().filter((post) => post.category === category).map((post) => ({ title: post.title, description: post.description, date: post.date, href: `/posts/${post.slug}`, kind: getContentTypeName(post.contentType), tags: post.tags })),
-    ...getSolutions().filter((post) => post.category === category).map((post) => ({ title: post.title, description: post.description, date: post.date, href: `/solutions/${post.slug}`, kind: `PS 풀이 · ${post.judge}`, tags: post.tags })),
-    ...getLogs().filter((post) => post.category === category).map((post) => ({ title: post.title, description: post.description, date: post.date, href: `/log/${post.slug}`, kind: post.type, tags: post.tags })),
-  ].sort((a, b) => b.date.localeCompare(a.date));
+  const entries = getAllContentEntries().filter((post) => post.category === category);
   const managedCategory = getManagedCategories().find((entry) => entry.slug === category);
   if (!entries.length && !managedCategory) notFound();
   const name = managedCategory?.name || category;

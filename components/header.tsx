@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getAllContentEntries } from "@/lib/content-index";
 import { siteConfig } from "@/lib/site";
 import { InteractiveShell } from "./interactive-shell";
 
 export function Header() {
-  const items = [...getPosts().map((post) => ({ title: post.title, href: `/posts/${post.slug}`, description: post.description, tags: post.tags })), ...getSolutions().map((post) => ({ title: post.title, href: `/solutions/${post.slug}`, description: post.description, tags: post.tags })), ...getLogs().map((post) => ({ title: post.title, href: `/log/${post.slug}`, description: post.description, tags: post.tags }))];
+  const items = getAllContentEntries().map(({ title, href, description, tags, algorithmTopics }) => ({ title, href, description, tags: [...new Set([...tags, ...algorithmTopics])] }));
   return <header className="site-header">
     <div className="header-inner">
       <Link className="wordmark" href="/"><span className="wordmark-avatar">{siteConfig.profileImage ? <Image src={siteConfig.profileImage} alt="" fill sizes="30px" priority /> : siteConfig.name.slice(0, 1).toUpperCase()}</span><span>{siteConfig.name}</span></Link>

@@ -1,21 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, Rss, Search } from "lucide-react";
-import { getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getCustomPosts, getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getAllContentEntries } from "@/lib/content-index";
+import { customContentSections } from "@/lib/editor-settings";
 import { siteConfig } from "@/lib/site";
 import { JudgeSignals } from "@/components/judge-signals";
 import { PostCard } from "@/components/post-card";
-import { getContentTypeName } from "@/lib/taxonomy";
 
 export default function Home() {
   const posts = getPosts();
   const solutions = getSolutions();
   const logs = getLogs();
-  const recent = [
-    ...posts.map((post) => ({ ...post, href: `/posts/${post.slug}`, kind: getContentTypeName(post.contentType) })),
-    ...solutions.map((post) => ({ ...post, href: `/solutions/${post.slug}`, kind: "PS 풀이" })),
-    ...logs.map((post) => ({ ...post, href: `/log/${post.slug}`, kind: post.type })),
-  ].sort((a, b) => b.updated.localeCompare(a.updated));
+  const customPosts = getCustomPosts();
+  const recent = getAllContentEntries().sort((a, b) => b.updated.localeCompare(a.updated));
   const tags = [...new Set(recent.flatMap((post) => post.tags))];
   const heroImage = siteConfig.backgroundImage || "/images/observatory-hero.webp";
 
@@ -33,6 +31,8 @@ export default function Home() {
       {solutions.length > 0 && <><header className="feed-header notes-heading"><div><h2>최근 풀이</h2></div><Link href="/solutions">모든 풀이 <ArrowRight size={15} /></Link></header><section className="compact-notes">{solutions.map((post) => <Link href={`/solutions/${post.slug}`} key={post.slug}><time>{post.date}</time><div><span>{post.judge} · {post.problemId}</span><h3>{post.title}</h3><p>{post.description}</p></div></Link>)}</section></>}
 
       {logs.length > 0 && <><header className="feed-header notes-heading"><div><h2>짧은 기록</h2></div><Link href="/log">전체 기록 <ArrowRight size={15} /></Link></header><section className="compact-notes">{logs.map((entry) => <Link href={`/log/${entry.slug}`} key={entry.slug}><time>{entry.date}</time><div><span>{entry.type}</span><h3>{entry.title}</h3><p>{entry.description}</p></div></Link>)}</section></>}
+
+      {customContentSections.filter((section) => section.visible && section.showOnHome).map((section) => { const entries = customPosts.filter((entry) => entry.section === section.key); return entries.length > 0 && <div key={section.key}><header className="feed-header notes-heading"><div><h2>{section.label}</h2></div><Link href={`/content/${section.key}`}>전체 보기 <ArrowRight size={15} /></Link></header><section className="compact-notes">{entries.map((entry) => <Link href={`/content/${section.key}/${entry.slug}`} key={entry.slug}><time>{entry.date}</time><div><span>{section.label}</span><h3>{entry.title}</h3><p>{entry.description}</p></div></Link>)}</section></div>; })}
     </div>
 
     <aside className="blog-widgets">

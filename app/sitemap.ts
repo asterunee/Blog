@@ -1,11 +1,14 @@
 import type { MetadataRoute } from "next";
-import { getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getPosts, getSolutions } from "@/lib/content";
+import { getAllContentEntries } from "@/lib/content-index";
+import { customContentSections } from "@/lib/editor-settings";
 import { siteConfig } from "@/lib/site";
+import { getManagedAlgorithms, getManagedCategories } from "@/lib/taxonomy";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const articles = getPosts(false);
   const solutions = getSolutions(false);
-  const logs = getLogs(false);
+  const allEntries = getAllContentEntries(false);
 
   const pages = [
     "",
@@ -18,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/library",
     "/log",
     "/about",
+    ...customContentSections.filter((section) => section.visible).map((section) => `/content/${section.key}`),
   ].map((path) => ({
     url: `${siteConfig.url}${path}`,
     lastModified: new Date(),
@@ -25,32 +29,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "" ? 1 : 0.7,
   }));
 
-  const entries = [
-    ...articles.map((post) => ({
-      url: `${siteConfig.url}/posts/${post.slug}`,
-      lastModified: new Date(post.updated),
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    })),
-    ...solutions.map((post) => ({
-      url: `${siteConfig.url}/solutions/${post.slug}`,
-      lastModified: new Date(post.updated),
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    })),
-    ...logs.map((post) => ({
-      url: `${siteConfig.url}/log/${post.slug}`,
-      lastModified: new Date(post.updated),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
-  ];
+  const entries = allEntries.map((post) => ({ url: `${siteConfig.url}${post.href}`, lastModified: new Date(post.updated), changeFrequency: "monthly" as const, priority: 0.8 }));
 
   const tags = [
     ...new Set([
-      ...articles.flatMap((post) => post.tags),
-      ...solutions.flatMap((post) => post.tags),
-      ...logs.flatMap((post) => post.tags),
+      ...allEntries.flatMap((post) => post.tags),
     ]),
   ].map((tag) => ({
     url: `${siteConfig.url}/tags/${encodeURIComponent(tag)}`,
@@ -59,7 +42,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  const categories = [...new Set([...articles.map((post) => post.category), ...solutions.map((post) => post.category), ...logs.map((post) => post.category)])].map((category) => ({
+  const categories = [...new Set([...allEntries.map((post) => post.category), ...getManagedCategories().filter((category) => category.visible).map((category) => category.slug)])].map((category) => ({
     url: `${siteConfig.url}/categories/${encodeURIComponent(category)}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
@@ -80,5 +63,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...pages, ...entries, ...categories, ...contentTypes, ...tags, ...judges];
+  const algorithms = getManagedAlgorithms().filter((algorithm) => algorithm.visible).map((algorithm) => ({
+    url: `${siteConfig.url}/algorithms/${algorithm.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
+
+  return [...pages, ...entries, ...categories, ...contentTypes, ...tags, ...judges, ...algorithms];
 }

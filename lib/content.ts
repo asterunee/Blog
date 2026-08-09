@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
 import { z } from "zod";
+import { getCustomContentSection } from "@/lib/editor-settings";
 
 const contentDate = z.preprocess(
   (value) => value instanceof Date ? value.toISOString().slice(0, 10) : value,
@@ -18,6 +19,7 @@ const solutionSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
   category: optionalSlug("uncategorized"),
+  algorithmTopics: z.array(z.string()).default([]),
   judge: z.string(), problemId: z.string(), problemUrl: z.string().url(),
   difficulty: z.number().int().nonnegative(), tier: z.string(), tags: z.array(z.string()).default([]),
   language: z.string().default("C++17"), solveTime: z.number().positive(), featured: z.boolean(), draft: z.boolean(),
@@ -32,6 +34,7 @@ const postSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
   category: optionalSlug("uncategorized"), contentType: optionalSlug("article"), tags: z.array(z.string()).default([]), series: z.string().default(""),
+  algorithmTopics: z.array(z.string()).default([]),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), accentColor: z.string().default(""),
   seoTitle: z.string().default(""), seoDescription: z.string().default(""), canonicalUrl: z.string().default(""),
   showToc: z.boolean().default(true), featured: z.boolean().default(false), pinned: z.boolean().default(false), draft: z.boolean(),
@@ -43,10 +46,26 @@ const logSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
   category: optionalSlug("uncategorized"), type: z.string().default("메모"), tags: z.array(z.string()).default([]), mood: z.string().default(""), location: z.string().default(""),
+  algorithmTopics: z.array(z.string()).default([]),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), featured: z.boolean().default(false), draft: z.boolean(),
 });
 
 export type LogPost = z.infer<typeof logSchema> & { body: string; readingMinutes: number };
+
+const customPostSchema = z.object({
+  title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
+  date: contentDate, updated: contentDate, author: z.string().min(1),
+  category: optionalSlug("uncategorized"), algorithmTopics: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
+  coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), showToc: z.boolean().default(true),
+  featured: z.boolean().default(false), draft: z.boolean().default(true),
+});
+
+export type CustomPost = z.infer<typeof customPostSchema> & {
+  body: string;
+  readingMinutes: number;
+  section: string;
+  sectionLabel: string;
+};
 
 export function getSolutions(includeDrafts = process.env.NODE_ENV !== "production"): Solution[] {
   const dir = path.join(process.cwd(), "content/solutions");
@@ -89,6 +108,30 @@ export function getLogs(includeDrafts = process.env.NODE_ENV !== "production"): 
 }
 
 export function getLog(slug: string) { return getLogs().find((post) => post.slug === slug); }
+
+export function getCustomPosts(includeDrafts = process.env.NODE_ENV !== "production", selectedSection?: string): CustomPost[] {
+  const root = path.join(process.cwd(), "content/custom");
+  if (!fs.existsSync(root)) return [];
+  const sections = fs.readdirSync(root, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+
+  return sections.flatMap((section) => {
+    if (selectedSection && section !== selectedSection) return [];
+    const directory = path.join(root, section);
+    const settings = getCustomContentSection(section);
+    return fs.readdirSync(directory).filter((file) => file.endsWith(".mdx")).flatMap((file) => {
+      const raw = fs.readFileSync(path.join(directory, file), "utf8");
+      const { data, content } = matter(raw);
+      const parsed = customPostSchema.safeParse({ ...data, slug: data.slug || file.replace(/\.mdx$/, "") });
+      if (!parsed.success) throw new Error(`Invalid frontmatter in custom/${section}/${file}: ${parsed.error.message}`);
+      if (!includeDrafts && parsed.data.draft) return [];
+      return [{ ...parsed.data, section, sectionLabel: settings?.label || section, body: content, readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)) }];
+    });
+  }).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getCustomPost(section: string, slug: string) {
+  return getCustomPosts(undefined, section).find((post) => post.slug === slug);
+}
 
 export function extractHeadings(source: string) {
   return [...source.matchAll(/^##\s+(.+)$/gm)].map((match) => ({

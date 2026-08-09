@@ -10,9 +10,17 @@ export type ManagedCategory = {
   appliesTo: ContentKind[];
 };
 
-export type ContentKind = "posts" | "solutions" | "logs";
+export type ContentKind = "posts" | "solutions" | "logs" | `custom:${string}`;
 
 export type ManagedContentType = {
+  slug: string;
+  name: string;
+  description: string;
+  order: number;
+  visible: boolean;
+};
+
+export type ManagedAlgorithm = {
   slug: string;
   name: string;
   description: string;
@@ -38,7 +46,7 @@ export function getManagedCategories(): ManagedCategory[] {
           order: Number.isFinite(value.order) ? Number(value.order) : 0,
           visible: value.visible !== false,
           appliesTo: (Array.isArray(value.appliesTo)
-            ? value.appliesTo.filter((kind): kind is ContentKind => kind === "posts" || kind === "solutions" || kind === "logs")
+            ? value.appliesTo.filter((kind): kind is ContentKind => typeof kind === "string" && (kind === "posts" || kind === "solutions" || kind === "logs" || kind.startsWith("custom:")))
             : ["posts", "solutions", "logs"]) as ContentKind[],
         }];
       } catch {
@@ -70,6 +78,34 @@ export function getManagedContentTypes(): ManagedContentType[] {
       }
     })
     .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "ko"));
+}
+
+export function getManagedAlgorithms(): ManagedAlgorithm[] {
+  const directory = path.join(process.cwd(), "content/algorithms");
+  if (!fs.existsSync(directory)) return [];
+
+  return fs.readdirSync(directory)
+    .filter((file) => file.endsWith(".json"))
+    .flatMap((file) => {
+      try {
+        const value = JSON.parse(fs.readFileSync(path.join(directory, file), "utf8")) as Partial<ManagedAlgorithm>;
+        if (!value.name) return [];
+        return [{
+          slug: file.replace(/\.json$/, ""),
+          name: value.name,
+          description: value.description || "",
+          order: Number.isFinite(value.order) ? Number(value.order) : 0,
+          visible: value.visible !== false,
+        }];
+      } catch {
+        return [];
+      }
+    })
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "ko"));
+}
+
+export function getAlgorithmName(slug: string) {
+  return getManagedAlgorithms().find((algorithm) => algorithm.slug === slug)?.name || slug;
 }
 
 export function getCategoryName(slug: string) {

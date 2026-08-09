@@ -48,6 +48,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <h1>{post.title}</h1>
       <p className="article-description">{post.description}</p>
       <div className="tag-row">{post.tags.map((tag) => <Link href={`/tags/${tag}`} key={tag}>{tag}</Link>)}</div>
+      {post.algorithmTopics.length > 0 && <div className="tag-row algorithm-topic-row">{post.algorithmTopics.map((topic) => <Link href={`/algorithms/${topic}`} key={topic}>알고리즘 · {topic}</Link>)}</div>}
       <dl className="article-facts"><div><dt>작성일</dt><dd>{post.date}</dd></div><div><dt>수정일</dt><dd>{post.updated}</dd></div><div><dt>글 형식</dt><dd>{contentTypeName}</dd></div><div><dt>카테고리</dt><dd>{categoryName}</dd></div></dl>
       {post.coverImage && <div className="article-cover"><Image src={post.coverImage} alt={post.coverAlt || ""} fill priority sizes="(max-width: 900px) 100vw, 820px" /></div>}
     </header>

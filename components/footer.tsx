@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { profiles, siteConfig } from "@/lib/site";
-import { getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getAllContentEntries } from "@/lib/content-index";
 
 export function Footer() {
-  const latest = [...getPosts(), ...getSolutions(), ...getLogs()].sort((a, b) => b.updated.localeCompare(a.updated))[0]?.updated;
+  const latest = getAllContentEntries().sort((a, b) => b.updated.localeCompare(a.updated))[0]?.updated;
   return <footer className="site-footer"><div className="footer-main">
     <div><Link href="/" className="footer-brand">{siteConfig.name}</Link><p>{siteConfig.motto}</p></div>
     <div className="footer-links">

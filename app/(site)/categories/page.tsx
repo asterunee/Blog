@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, ChevronDown, Code2, FileText, Folder, FolderOpen, NotebookPen } from "lucide-react";
-import { getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getCustomPosts, getLogs, getPosts, getSolutions } from "@/lib/content";
+import { getAllContentEntries } from "@/lib/content-index";
+import { customContentSections } from "@/lib/editor-settings";
 import { getCategoryName, getContentTypeName, getManagedCategories, getManagedContentTypes } from "@/lib/taxonomy";
 
 export const metadata: Metadata = {
@@ -14,11 +16,8 @@ export default function CategoriesPage() {
   const posts = getPosts();
   const solutions = getSolutions();
   const logs = getLogs();
-  const allEntries = [
-    ...posts.map((post) => ({ category: post.category, href: `/posts/${post.slug}`, title: post.title, date: post.updated, kind: getContentTypeName(post.contentType) })),
-    ...solutions.map((post) => ({ category: post.category, href: `/solutions/${post.slug}`, title: post.title, date: post.updated, kind: "PS 풀이" })),
-    ...logs.map((post) => ({ category: post.category, href: `/log/${post.slug}`, title: post.title, date: post.updated, kind: post.type })),
-  ];
+  const customPosts = getCustomPosts();
+  const allEntries = getAllContentEntries();
   const counts = allEntries.reduce((map, entry) => map.set(entry.category, (map.get(entry.category) || 0) + 1), new Map<string, number>());
   const managedCategories = getManagedCategories().filter((category) => category.visible);
   const managedSlugs = new Set(managedCategories.map((category) => category.slug));
@@ -35,11 +34,13 @@ export default function CategoriesPage() {
   ];
   const judges = [...solutions.reduce((map, post) => map.set(post.judge, (map.get(post.judge) || 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
   const logTypes = [...logs.reduce((map, post) => map.set(post.type, (map.get(post.type) || 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
+  const customTypes = customContentSections.filter((section) => section.visible).map((section) => ({ name: section.label, count: customPosts.filter((post) => post.section === section.key).length, href: `/content/${section.key}` }));
   const groups = [
     { label: "카테고리", icon: Folder, count: allEntries.length, entries: categories.map((entry) => ({ name: entry.name, count: entry.count, href: `/categories/${encodeURIComponent(entry.slug)}` })) },
     { label: "글 형식", icon: FileText, count: posts.length, entries: contentTypes.map((entry) => ({ name: entry.name, count: entry.count, href: `/types/${encodeURIComponent(entry.slug)}` })) },
     { label: "문제 출처", icon: Code2, count: solutions.length, entries: judges.map(([name, count]) => ({ name, count, href: `/judge/${encodeURIComponent(name)}` })) },
     { label: "기록 형식", icon: NotebookPen, count: logs.length, entries: logTypes.map(([name, count]) => ({ name, count, href: "/log" })) },
+    { label: "추가 콘텐츠", icon: BookOpenText, count: customPosts.length, entries: customTypes },
   ].filter((group) => group.entries.length > 0);
   const recent = allEntries.sort((a, b) => b.date.localeCompare(a.date));
 

@@ -1,4 +1,5 @@
 import { siteSettings as settings } from "@/lib/settings";
+import { customContentSections } from "@/lib/editor-settings";
 
 export const siteConfig = {
   name: settings.siteName,
@@ -22,7 +23,10 @@ export const siteConfig = {
   defaultTheme: settings.defaultTheme,
   showJudgeSignals: settings.showJudgeSignals,
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-  navigation: settings.navigation.filter((item) => item.visible).map((item) => ({ href: item.href, ko: item.label, en: item.labelEn })),
+  navigation: [
+    ...settings.navigation.filter((item) => item.visible).map((item) => ({ href: item.href, ko: item.label, en: item.labelEn })),
+    ...customContentSections.filter((item) => item.visible && item.showInNavigation).map((item) => ({ href: `/content/${item.key}`, ko: item.label, en: item.label })),
+  ].filter((item, index, all) => all.findIndex((entry) => entry.href === item.href) === index),
 } as const;
 
 export type Profile = { name: string; handle: string; url?: string };
@@ -36,14 +40,6 @@ export const profiles: Profile[] = [
   { name: "CList", handle: "asterunee", url: process.env.NEXT_PUBLIC_CLIST_URL },
   { name: "GitHub", handle: "asterunee", url: process.env.NEXT_PUBLIC_GITHUB_URL },
 ];
-
-export const algorithms = [
-  ["자료구조", "data-structures"], ["그래프", "graph"], ["트리", "tree"],
-  ["문자열", "string"], ["수론", "number-theory"], ["조합론", "combinatorics"],
-  ["동적 계획법", "dynamic-programming"], ["기하", "geometry"],
-  ["Convolution", "convolution"], ["Formal Power Series", "fps"],
-  ["휴리스틱 및 챌린지", "heuristic"],
-] as const;
 
 export const libraryItems = [
   { name: "Disjoint Set Union", category: "자료구조", include: "library/datastructure/union_find/union_find.hpp", description: "경로 압축과 union by size를 사용하는 서로소 집합 자료구조", condition: "정점 집합이 고정되고 합치기만 발생할 때", complexity: "amortized O(α(N))", related: "" },

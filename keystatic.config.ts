@@ -1,6 +1,7 @@
 import { collection, config, fields, singleton } from "@keystatic/core";
 import { block, inline, repeating, wrapper } from "@keystatic/core/content-components";
 import siteSettings from "./content/settings/site.json";
+import editorSettings from "./content/settings/editor.json";
 
 const githubStorage = { kind: "github" as const, repo: "asterunee/Blog" as const, branchPrefix: "content/" };
 const localStorage = { kind: "local" as const };
@@ -15,6 +16,14 @@ const editorCollections = [
   siteSettings.showSolutionEditor !== false ? "solutions" : null,
   siteSettings.showLogEditor !== false ? "logs" : null,
 ].filter((value): value is "posts" | "solutions" | "logs" => value !== null);
+type EditorSection = { key?: string; label?: string; description?: string; order?: number; visible?: boolean; showInNavigation?: boolean; showOnHome?: boolean };
+const editorMenu = editorSettings as { groupLabel?: string; sections?: EditorSection[] };
+const customSections = (Array.isArray(editorMenu.sections) ? editorMenu.sections : []).flatMap((section) => {
+  const key = (section.key || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+  if (!key || !section.label?.trim()) return [];
+  return [{ ...section, key, label: section.label.trim(), collectionKey: `custom_${key.replaceAll("-", "_")}` }];
+}).filter((section, index, all) => all.findIndex((entry) => entry.key === section.key) === index).sort((a, b) => (a.order || 0) - (b.order || 0));
+const dynamicEditorCollections = customSections.filter((section) => section.visible !== false).map((section) => section.collectionKey);
 
 const required = { validation: { isRequired: true } } as const;
 const today = { kind: "today" as const };
@@ -232,15 +241,50 @@ const bodyField = (directory: string, publicPath: string, description: string) =
   },
 });
 
+const algorithmTopicsField = () => fields.array(
+  fields.relationship({ label: "알고리즘 주제", collection: "algorithms" }),
+  { label: "알고리즘 주제", description: "알고리즘 관리에서 만든 주제를 여러 개 연결할 수 있습니다.", itemLabel: (props) => props.value || "주제 선택" },
+);
+
+const customCollections = Object.fromEntries(customSections.map((section) => {
+  const imageDirectory = `public/images/content/${section.key}`;
+  const imagePublicPath = `/images/content/${section.key}/`;
+  return [section.collectionKey, collection({
+    label: section.label,
+    slugField: "title",
+    path: `content/custom/${section.key}/*`,
+    entryLayout: "content",
+    previewUrl: `/content/${section.key}/{slug}`,
+    columns: ["title", "category", "date", "featured", "draft"],
+    format: { contentField: "body" },
+    schema: {
+      title: fields.slug({ name: { label: "제목", validation: { isRequired: true } }, slug: { label: "URL slug", description: "영문 소문자와 하이픈을 권장합니다." } }),
+      description: fields.text({ label: "요약", multiline: true, description: "목록과 공유 카드에 표시됩니다.", ...required }),
+      category: fields.relationship({ label: "카테고리", collection: "categories", description: "분류 관리에서 만든 카테고리를 선택하세요." }),
+      algorithmTopics: algorithmTopicsField(),
+      tags: fields.array(fields.text({ label: "태그" }), { label: "태그", itemLabel: (props) => props.value }),
+      date: fields.date({ label: "작성일", defaultValue: today, ...required }),
+      updated: fields.date({ label: "수정일", defaultValue: today, ...required }),
+      author: fields.text({ label: "작성자", defaultValue: "asterunee", ...required }),
+      coverImage: fields.image({ label: "표지 이미지", directory: imageDirectory, publicPath: imagePublicPath }),
+      coverAlt: fields.text({ label: "표지 이미지 설명" }),
+      showToc: fields.checkbox({ label: "목차 표시", defaultValue: true }),
+      featured: fields.checkbox({ label: "대표 콘텐츠", defaultValue: false }),
+      draft: fields.checkbox({ label: "초안", description: "해제한 콘텐츠만 운영 사이트에 공개됩니다.", defaultValue: true }),
+      body: bodyField(imageDirectory, imagePublicPath, `${section.label} 콘텐츠를 작성합니다. 모든 서식과 콘텐츠 블록을 사용할 수 있습니다.`),
+    },
+  })];
+}));
+
 export default config({
   storage: keystaticGithubMode ? githubStorage : localStorage,
   ui: {
     brand: { name: "asterunee studio" },
-    navigation: {
-      "콘텐츠 작성": editorCollections,
-      "분류 관리": ["categories", "contentTypes"],
-      "블로그 관리": ["site"],
-    },
+    navigation: ({
+      [editorMenu.groupLabel?.trim() || "콘텐츠 작성"]: [...editorCollections, ...dynamicEditorCollections],
+      "분류 관리": ["categories", "contentTypes", "algorithms"],
+      "블로그 관리": ["site", "editor"],
+    } as never),
   },
   collections: {
     categories: collection({
@@ -260,6 +304,7 @@ export default config({
             { label: editorLabels.posts, value: "posts" },
             { label: editorLabels.solutions, value: "solutions" },
             { label: editorLabels.logs, value: "logs" },
+            ...customSections.map((section) => ({ label: section.label, value: `custom:${section.key}` })),
           ],
           defaultValue: ["posts", "solutions", "logs"],
         }),
@@ -281,6 +326,20 @@ export default config({
         visible: fields.checkbox({ label: "목록에 표시", defaultValue: true }),
       },
     }),
+    algorithms: collection({
+      label: "알고리즘 주제",
+      slugField: "name",
+      path: "content/algorithms/*",
+      entryLayout: "form",
+      format: "json",
+      columns: ["name", "order", "visible"],
+      schema: {
+        name: fields.slug({ name: { label: "주제 이름", validation: { isRequired: true } }, slug: { label: "주제 URL", description: "예: graph, dynamic-programming" } }),
+        description: fields.text({ label: "주제 설명", multiline: true, description: "알고리즘 목록과 주제 상세 화면에 표시됩니다." }),
+        order: fields.integer({ label: "정렬 순서", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
+        visible: fields.checkbox({ label: "알고리즘 목록에 표시", defaultValue: true }),
+      },
+    }),
     posts: collection({
       label: editorLabels.posts,
       slugField: "title",
@@ -294,6 +353,7 @@ export default config({
         description: fields.text({ label: "글 요약", multiline: true, description: "목록과 공유 카드에 표시됩니다.", ...required }),
         contentType: fields.relationship({ label: "글 형식", collection: "contentTypes", description: "분류 관리에서 형식을 자유롭게 만들 수 있습니다." }),
         category: fields.relationship({ label: "카테고리", collection: "categories", description: "분류 관리에서 카테고리를 먼저 만들 수 있습니다." }),
+        algorithmTopics: algorithmTopicsField(),
         series: fields.text({ label: "시리즈", description: "연재가 아니라면 비워 두세요." }),
         tags: fields.array(fields.text({ label: "태그" }), { label: "태그", itemLabel: (props) => props.value }),
         date: fields.date({ label: "작성일", defaultValue: today, ...required }),
@@ -324,6 +384,7 @@ export default config({
         title: fields.slug({ name: { label: "풀이 제목", validation: { isRequired: true } }, slug: { label: "URL slug", description: "영문 소문자와 하이픈을 권장합니다." } }),
         description: fields.text({ label: "풀이 요약", multiline: true, ...required }),
         category: fields.relationship({ label: "카테고리", collection: "categories", description: "대회, 알고리즘 학습 등 원하는 공용 카테고리를 선택하세요." }),
+        algorithmTopics: algorithmTopicsField(),
         date: fields.date({ label: "작성일", defaultValue: today, ...required }),
         updated: fields.date({ label: "수정일", defaultValue: today, ...required }),
         author: fields.text({ label: "작성자", defaultValue: "asterunee", ...required }),
@@ -361,6 +422,7 @@ export default config({
         title: fields.slug({ name: { label: "기록 제목", validation: { isRequired: true } }, slug: { label: "URL slug" } }),
         description: fields.text({ label: "기록 요약", multiline: true, ...required }),
         category: fields.relationship({ label: "카테고리", collection: "categories", description: "일상, 배움, 프로젝트 등 원하는 공용 카테고리를 선택하세요." }),
+        algorithmTopics: algorithmTopicsField(),
         type: fields.text({ label: "기록 종류", description: "원하는 분류를 직접 입력하세요.", defaultValue: "메모", ...required }),
         mood: fields.text({ label: "기분/상태" }),
         location: fields.text({ label: "장소" }),
@@ -375,6 +437,7 @@ export default config({
         body: bodyField("public/images/log", "/images/log/", "짧은 메모부터 긴 회고까지 쓰고 이미지, 링크 카드, 인용, 영상 같은 콘텐츠 블록을 활용하세요."),
       },
     }),
+    ...customCollections,
   },
   singletons: {
     site: singleton({
@@ -414,6 +477,24 @@ export default config({
           href: fields.text({ label: "이동 경로", description: "예: /posts", ...required }),
           visible: fields.checkbox({ label: "메뉴에 표시", defaultValue: true }),
         }), { label: "사이드바 메뉴", description: "끌어서 순서를 바꾸고 표시 여부를 설정할 수 있습니다.", itemLabel: (props) => props.fields.label.value || "새 메뉴" }),
+      },
+    }),
+    editor: singleton({
+      label: "작성 메뉴 설정",
+      path: "content/settings/editor",
+      entryLayout: "form",
+      format: "json",
+      schema: {
+        groupLabel: fields.text({ label: "작성 메뉴 그룹 이름", defaultValue: "콘텐츠 작성", ...required }),
+        sections: fields.array(fields.object({
+          key: fields.text({ label: "고유 URL 키", description: "영문 소문자, 숫자와 하이픈만 사용하세요. 저장 후에는 변경하지 않는 것을 권장합니다.", validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: "영문 소문자, 숫자와 하이픈만 사용할 수 있습니다." } } }),
+          label: fields.text({ label: "작성 카드 이름", description: "예: 리뷰, 프로젝트, 에세이", ...required }),
+          description: fields.text({ label: "공개 목록 설명", multiline: true }),
+          order: fields.integer({ label: "정렬 순서", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
+          visible: fields.checkbox({ label: "작성기에 표시하고 공개", defaultValue: true }),
+          showInNavigation: fields.checkbox({ label: "사이드바 메뉴에도 표시", defaultValue: false }),
+          showOnHome: fields.checkbox({ label: "홈에도 최신 콘텐츠 표시", defaultValue: false }),
+        }), { label: "작성 하위 항목", description: "새 항목을 저장하면 자동 배포 후 콘텐츠 작성 화면에 별도 카드가 생깁니다.", itemLabel: (props) => props.fields.label.value || "새 작성 메뉴" }),
       },
     }),
   },
