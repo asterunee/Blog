@@ -9,6 +9,15 @@
       "visible": true,
       "showInNavigation": true,
       "showOnHome": true
+    },
+    {
+      "key": "problemsolving",
+      "label": "PS",
+      "description": "Problem Solving",
+      "order": 0,
+      "visible": true,
+      "showInNavigation": true,
+      "showOnHome": true
     }
   ]
 }
