@@ -2,9 +2,9 @@
   "groupLabel": "CP",
   "sections": [
     {
-      "key": "solutions",
-      "label": "solutions",
-      "description": "CP문제 풀이 및 업솔빙",
+      "key": "competitiveprogramming",
+      "label": "CP",
+      "description": "competitiveprogramming",
       "order": 0,
       "visible": true,
       "showInNavigation": true,
