@@ -5,14 +5,14 @@ import { getLogs, getPosts, getSolutions } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 import { JudgeSignals } from "@/components/judge-signals";
 import { PostCard } from "@/components/post-card";
-import { getCategoryName } from "@/lib/taxonomy";
+import { getContentTypeName } from "@/lib/taxonomy";
 
 export default function Home() {
   const posts = getPosts();
   const solutions = getSolutions();
   const logs = getLogs();
   const recent = [
-    ...posts.map((post) => ({ ...post, href: `/posts/${post.slug}`, kind: getCategoryName(post.category) })),
+    ...posts.map((post) => ({ ...post, href: `/posts/${post.slug}`, kind: getContentTypeName(post.contentType) })),
     ...solutions.map((post) => ({ ...post, href: `/solutions/${post.slug}`, kind: "PS 풀이" })),
     ...logs.map((post) => ({ ...post, href: `/log/${post.slug}`, kind: post.type })),
   ].sort((a, b) => b.updated.localeCompare(a.updated));

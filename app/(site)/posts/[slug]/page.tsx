@@ -8,7 +8,7 @@ import { MdxContent } from "@/components/mdx-content";
 import { TableOfContents } from "@/components/toc";
 import { extractHeadings, getPost, getPosts } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
-import { getCategoryName } from "@/lib/taxonomy";
+import { getCategoryName, getContentTypeName } from "@/lib/taxonomy";
 
 export function generateStaticParams() { return getPosts(false).map((post) => ({ slug: post.slug })); }
 
@@ -39,15 +39,16 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const showToc = post.showToc && headings.length > 0;
   const articleStyle = post.accentColor ? { "--cyan": post.accentColor } as CSSProperties : undefined;
   const categoryName = getCategoryName(post.category);
+  const contentTypeName = getContentTypeName(post.contentType);
 
   return <div className="article-shell" style={articleStyle}>
     <header className="article-header">
       <Link href="/posts" className="back-link"><ArrowLeft size={15} /> 모든 글</Link>
-      <p><Link href={`/categories/${encodeURIComponent(post.category)}`}>{categoryName}</Link> · {post.date}{post.series ? ` · ${post.series}` : ""}</p>
+      <p><Link href={`/types/${encodeURIComponent(post.contentType)}`}>{contentTypeName}</Link> · <Link href={`/categories/${encodeURIComponent(post.category)}`}>{categoryName}</Link> · {post.date}{post.series ? ` · ${post.series}` : ""}</p>
       <h1>{post.title}</h1>
       <p className="article-description">{post.description}</p>
       <div className="tag-row">{post.tags.map((tag) => <Link href={`/tags/${tag}`} key={tag}>{tag}</Link>)}</div>
-      <dl className="article-facts"><div><dt>작성일</dt><dd>{post.date}</dd></div><div><dt>수정일</dt><dd>{post.updated}</dd></div><div><dt>읽는 시간</dt><dd>{post.readingMinutes}분</dd></div><div><dt>카테고리</dt><dd>{categoryName}</dd></div></dl>
+      <dl className="article-facts"><div><dt>작성일</dt><dd>{post.date}</dd></div><div><dt>수정일</dt><dd>{post.updated}</dd></div><div><dt>글 형식</dt><dd>{contentTypeName}</dd></div><div><dt>카테고리</dt><dd>{categoryName}</dd></div></dl>
       {post.coverImage && <div className="article-cover"><Image src={post.coverImage} alt={post.coverAlt || ""} fill priority sizes="(max-width: 900px) 100vw, 820px" /></div>}
     </header>
     <div className={`article-layout${showToc ? "" : " without-toc"}`}>{showToc && <TableOfContents headings={headings} />}<article className="prose"><MdxContent source={post.body} /></article></div>

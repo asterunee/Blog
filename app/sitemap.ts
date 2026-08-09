@@ -59,11 +59,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  const categories = [...new Set(articles.map((post) => post.category))].map((category) => ({
+  const categories = [...new Set([...articles.map((post) => post.category), ...solutions.map((post) => post.category), ...logs.map((post) => post.category)])].map((category) => ({
     url: `${siteConfig.url}/categories/${encodeURIComponent(category)}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.6,
+  }));
+
+  const contentTypes = [...new Set(articles.map((post) => post.contentType))].map((type) => ({
+    url: `${siteConfig.url}/types/${encodeURIComponent(type)}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
   }));
 
   const judges = [...new Set(solutions.map((post) => post.judge))].map((judge) => ({
@@ -73,5 +80,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...pages, ...entries, ...categories, ...tags, ...judges];
+  return [...pages, ...entries, ...categories, ...contentTypes, ...tags, ...judges];
 }

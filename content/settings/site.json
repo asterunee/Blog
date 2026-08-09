@@ -16,6 +16,12 @@
   "accentColor": "#5ee7f7",
   "defaultTheme": "dark",
   "showJudgeSignals": true,
+  "editorPostLabel": "글",
+  "showPostEditor": true,
+  "editorSolutionLabel": "PS 풀이",
+  "showSolutionEditor": true,
+  "editorLogLabel": "짧은 기록",
+  "showLogEditor": true,
   "navigation": [
     { "label": "글", "labelEn": "Posts", "href": "/posts", "visible": true },
     { "label": "카테고리", "labelEn": "Categories", "href": "/categories", "visible": true },

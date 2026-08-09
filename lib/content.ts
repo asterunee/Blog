@@ -9,11 +9,17 @@ const contentDate = z.preprocess(
   z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD 형식의 날짜가 필요합니다."),
 );
 
+const optionalSlug = (fallback: string) => z.preprocess(
+  (value) => typeof value === "string" && value ? value : fallback,
+  z.string(),
+);
+
 const solutionSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
+  category: optionalSlug("uncategorized"),
   judge: z.string(), problemId: z.string(), problemUrl: z.string().url(),
-  difficulty: z.number().int().nonnegative(), tier: z.string(), tags: z.array(z.string()).min(1),
+  difficulty: z.number().int().nonnegative(), tier: z.string(), tags: z.array(z.string()).default([]),
   language: z.string().default("C++17"), solveTime: z.number().positive(), featured: z.boolean(), draft: z.boolean(),
   status: z.string().default("Solved"), timeLimit: z.string().default("2 seconds"), memoryLimit: z.string().default("256 MB"),
   contest: z.string().default(""), solutionType: z.string().default(""), runtime: z.string().default(""), memoryUsed: z.string().default(""),
@@ -25,7 +31,7 @@ export type Solution = z.infer<typeof solutionSchema> & { body: string; readingM
 const postSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
-  category: z.preprocess((value) => typeof value === "string" && value ? value : "uncategorized", z.string()), tags: z.array(z.string()).default([]), series: z.string().default(""),
+  category: optionalSlug("uncategorized"), contentType: optionalSlug("article"), tags: z.array(z.string()).default([]), series: z.string().default(""),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), accentColor: z.string().default(""),
   seoTitle: z.string().default(""), seoDescription: z.string().default(""), canonicalUrl: z.string().default(""),
   showToc: z.boolean().default(true), featured: z.boolean().default(false), pinned: z.boolean().default(false), draft: z.boolean(),
@@ -36,7 +42,7 @@ export type BlogPost = z.infer<typeof postSchema> & { body: string; readingMinut
 const logSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
   date: contentDate, updated: contentDate, author: z.string().min(1),
-  type: z.string(), tags: z.array(z.string()).default([]), mood: z.string().default(""), location: z.string().default(""),
+  category: optionalSlug("uncategorized"), type: z.string().default("메모"), tags: z.array(z.string()).default([]), mood: z.string().default(""), location: z.string().default(""),
   coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), featured: z.boolean().default(false), draft: z.boolean(),
 });
 

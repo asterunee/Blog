@@ -1,9 +1,20 @@
 import { collection, config, fields, singleton } from "@keystatic/core";
 import { block, inline, repeating, wrapper } from "@keystatic/core/content-components";
+import siteSettings from "./content/settings/site.json";
 
 const githubStorage = { kind: "github" as const, repo: "asterunee/Blog" as const, branchPrefix: "content/" };
 const localStorage = { kind: "local" as const };
 export const keystaticGithubMode = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE === "github";
+const editorLabels = {
+  posts: siteSettings.editorPostLabel || "글",
+  solutions: siteSettings.editorSolutionLabel || "PS 풀이",
+  logs: siteSettings.editorLogLabel || "짧은 기록",
+};
+const editorCollections = [
+  siteSettings.showPostEditor !== false ? "posts" : null,
+  siteSettings.showSolutionEditor !== false ? "solutions" : null,
+  siteSettings.showLogEditor !== false ? "logs" : null,
+].filter((value): value is "posts" | "solutions" | "logs" => value !== null);
 
 const required = { validation: { isRequired: true } } as const;
 const today = { kind: "today" as const };
@@ -226,8 +237,8 @@ export default config({
   ui: {
     brand: { name: "asterunee studio" },
     navigation: {
-      "글 작성": ["posts", "solutions", "logs"],
-      "분류 관리": ["categories"],
+      "콘텐츠 작성": editorCollections,
+      "분류 관리": ["categories", "contentTypes"],
       "블로그 관리": ["site"],
     },
   },
@@ -242,21 +253,46 @@ export default config({
       schema: {
         name: fields.slug({ name: { label: "카테고리 이름", validation: { isRequired: true } }, slug: { label: "카테고리 URL", description: "영문 소문자와 하이픈을 권장합니다." } }),
         description: fields.text({ label: "카테고리 설명", multiline: true, description: "카테고리 페이지와 목록에 표시됩니다." }),
+        appliesTo: fields.multiselect({
+          label: "사용할 콘텐츠",
+          description: "이 카테고리를 주로 사용할 콘텐츠를 모두 표시하세요. 실제 작성기에서는 세 종류 모두 선택할 수 있습니다.",
+          options: [
+            { label: editorLabels.posts, value: "posts" },
+            { label: editorLabels.solutions, value: "solutions" },
+            { label: editorLabels.logs, value: "logs" },
+          ],
+          defaultValue: ["posts", "solutions", "logs"],
+        }),
+        order: fields.integer({ label: "정렬 순서", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
+        visible: fields.checkbox({ label: "목록에 표시", defaultValue: true }),
+      },
+    }),
+    contentTypes: collection({
+      label: "글 형식",
+      slugField: "name",
+      path: "content/content-types/*",
+      entryLayout: "form",
+      format: "json",
+      columns: ["name", "order", "visible"],
+      schema: {
+        name: fields.slug({ name: { label: "형식 이름", validation: { isRequired: true } }, slug: { label: "형식 URL", description: "예: review, essay, dev-note" } }),
+        description: fields.text({ label: "형식 설명", multiline: true, description: "기술 글, 리뷰, 회고, 에세이처럼 원하는 형식을 자유롭게 만드세요." }),
         order: fields.integer({ label: "정렬 순서", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
         visible: fields.checkbox({ label: "목록에 표시", defaultValue: true }),
       },
     }),
     posts: collection({
-      label: "일반 글",
+      label: editorLabels.posts,
       slugField: "title",
       path: "content/posts/*",
       entryLayout: "content",
       previewUrl: "/posts/{slug}",
-      columns: ["title", "category", "date", "pinned", "draft"],
+      columns: ["title", "contentType", "category", "date", "pinned", "draft"],
       format: { contentField: "body" },
       schema: {
         title: fields.slug({ name: { label: "글 제목", validation: { isRequired: true } }, slug: { label: "URL slug", description: "영문 소문자와 하이픈을 권장합니다." } }),
         description: fields.text({ label: "글 요약", multiline: true, description: "목록과 공유 카드에 표시됩니다.", ...required }),
+        contentType: fields.relationship({ label: "글 형식", collection: "contentTypes", description: "분류 관리에서 형식을 자유롭게 만들 수 있습니다." }),
         category: fields.relationship({ label: "카테고리", collection: "categories", description: "분류 관리에서 카테고리를 먼저 만들 수 있습니다." }),
         series: fields.text({ label: "시리즈", description: "연재가 아니라면 비워 두세요." }),
         tags: fields.array(fields.text({ label: "태그" }), { label: "태그", itemLabel: (props) => props.value }),
@@ -277,16 +313,17 @@ export default config({
       },
     }),
     solutions: collection({
-      label: "PS 풀이",
+      label: editorLabels.solutions,
       slugField: "title",
       path: "content/solutions/*",
       entryLayout: "content",
       previewUrl: "/solutions/{slug}",
-      columns: ["title", "judge", "problemId", "date", "draft"],
+      columns: ["title", "category", "judge", "problemId", "date", "draft"],
       format: { contentField: "body" },
       schema: {
         title: fields.slug({ name: { label: "풀이 제목", validation: { isRequired: true } }, slug: { label: "URL slug", description: "영문 소문자와 하이픈을 권장합니다." } }),
         description: fields.text({ label: "풀이 요약", multiline: true, ...required }),
+        category: fields.relationship({ label: "카테고리", collection: "categories", description: "대회, 알고리즘 학습 등 원하는 공용 카테고리를 선택하세요." }),
         date: fields.date({ label: "작성일", defaultValue: today, ...required }),
         updated: fields.date({ label: "수정일", defaultValue: today, ...required }),
         author: fields.text({ label: "작성자", defaultValue: "asterunee", ...required }),
@@ -313,16 +350,17 @@ export default config({
       },
     }),
     logs: collection({
-      label: "짧은 기록",
+      label: editorLabels.logs,
       slugField: "title",
       path: "content/log/*",
       entryLayout: "content",
       previewUrl: "/log/{slug}",
-      columns: ["title", "type", "date", "featured", "draft"],
+      columns: ["title", "category", "type", "date", "featured", "draft"],
       format: { contentField: "body" },
       schema: {
         title: fields.slug({ name: { label: "기록 제목", validation: { isRequired: true } }, slug: { label: "URL slug" } }),
         description: fields.text({ label: "기록 요약", multiline: true, ...required }),
+        category: fields.relationship({ label: "카테고리", collection: "categories", description: "일상, 배움, 프로젝트 등 원하는 공용 카테고리를 선택하세요." }),
         type: fields.text({ label: "기록 종류", description: "원하는 분류를 직접 입력하세요.", defaultValue: "메모", ...required }),
         mood: fields.text({ label: "기분/상태" }),
         location: fields.text({ label: "장소" }),
@@ -363,6 +401,12 @@ export default config({
         accentColor: fields.text({ label: "사이트 강조 색", description: "#RRGGBB 형식", defaultValue: "#5ee7f7", validation: { isRequired: true, pattern: { regex: /^#[0-9a-fA-F]{6}$/, message: "#RRGGBB 형식으로 입력하세요." } } }),
         defaultTheme: fields.select({ label: "기본 테마", options: [{ label: "다크", value: "dark" }, { label: "오로라", value: "aurora" }, { label: "포레스트", value: "forest" }, { label: "선셋", value: "sunset" }, { label: "페이퍼", value: "paper" }, { label: "라이트", value: "light" }], defaultValue: "dark" }),
         showJudgeSignals: fields.checkbox({ label: "홈에 PS 활동 표시", defaultValue: true }),
+        editorPostLabel: fields.text({ label: "글 작성 카드 이름", description: "예: 글, 아티클, 긴 글", ...required }),
+        showPostEditor: fields.checkbox({ label: "글 작성 카드 표시", defaultValue: true }),
+        editorSolutionLabel: fields.text({ label: "풀이 작성 카드 이름", description: "예: PS 풀이, 문제 풀이", ...required }),
+        showSolutionEditor: fields.checkbox({ label: "풀이 작성 카드 표시", defaultValue: true }),
+        editorLogLabel: fields.text({ label: "기록 작성 카드 이름", description: "예: 짧은 기록, 메모, 일기", ...required }),
+        showLogEditor: fields.checkbox({ label: "기록 작성 카드 표시", defaultValue: true }),
         navigation: fields.array(fields.object({
           label: fields.text({ label: "메뉴 이름", ...required }),
           labelEn: fields.text({ label: "영문 이름", ...required }),
