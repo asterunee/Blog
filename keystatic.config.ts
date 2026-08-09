@@ -1,29 +1,25 @@
 import { collection, config, fields, singleton } from "@keystatic/core";
 import { block, inline, repeating, wrapper } from "@keystatic/core/content-components";
-import siteSettings from "./content/settings/site.json";
 import editorSettings from "./content/settings/editor.json";
 
 const githubStorage = { kind: "github" as const, repo: "asterunee/Blog" as const, branchPrefix: "content/" };
 const localStorage = { kind: "local" as const };
 export const keystaticGithubMode = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE === "github";
-const editorLabels = {
-  posts: siteSettings.editorPostLabel || "글",
-  solutions: siteSettings.editorSolutionLabel || "PS 풀이",
-  logs: siteSettings.editorLogLabel || "짧은 기록",
-};
-const editorCollections = [
-  siteSettings.showPostEditor !== false ? "posts" : null,
-  siteSettings.showSolutionEditor !== false ? "solutions" : null,
-  siteSettings.showLogEditor !== false ? "logs" : null,
-].filter((value): value is "posts" | "solutions" | "logs" => value !== null);
 type EditorSection = { key?: string; label?: string; description?: string; order?: number; visible?: boolean; showInNavigation?: boolean; showOnHome?: boolean };
 const editorMenu = editorSettings as { groupLabel?: string; sections?: EditorSection[] };
-const customSections = (Array.isArray(editorMenu.sections) ? editorMenu.sections : []).flatMap((section) => {
+const builtInEditorKeys = new Set(["posts", "solutions", "logs"]);
+const editorSections = (Array.isArray(editorMenu.sections) ? editorMenu.sections : []).flatMap((section) => {
   const key = (section.key || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
   if (!key || !section.label?.trim()) return [];
-  return [{ ...section, key, label: section.label.trim(), collectionKey: `custom_${key.replaceAll("-", "_")}` }];
+  return [{ ...section, key, label: section.label.trim(), collectionKey: builtInEditorKeys.has(key) ? key : `custom_${key.replaceAll("-", "_")}` }];
 }).filter((section, index, all) => all.findIndex((entry) => entry.key === section.key) === index).sort((a, b) => (a.order || 0) - (b.order || 0));
-const dynamicEditorCollections = customSections.filter((section) => section.visible !== false).map((section) => section.collectionKey);
+const customSections = editorSections.filter((section) => !builtInEditorKeys.has(section.key));
+const visibleEditorCollections = editorSections.filter((section) => section.visible !== false).map((section) => section.collectionKey);
+const editorLabels = {
+  posts: editorSections.find((section) => section.key === "posts")?.label || "글",
+  solutions: editorSections.find((section) => section.key === "solutions")?.label || "PS 풀이",
+  logs: editorSections.find((section) => section.key === "logs")?.label || "짧은 기록",
+};
 
 const required = { validation: { isRequired: true } } as const;
 const today = { kind: "today" as const };
@@ -281,9 +277,9 @@ export default config({
   ui: {
     brand: { name: "asterunee studio" },
     navigation: ({
-      [editorMenu.groupLabel?.trim() || "콘텐츠 작성"]: [...editorCollections, ...dynamicEditorCollections],
+      [editorMenu.groupLabel?.trim() || "콘텐츠 작성"]: ["editor", ...visibleEditorCollections],
       "분류 관리": ["categories", "contentTypes", "algorithms"],
-      "블로그 관리": ["site", "editor"],
+      "블로그 관리": ["site"],
     } as never),
   },
   collections: {
@@ -465,12 +461,6 @@ export default config({
         accentColor: fields.text({ label: "사이트 강조 색", description: "#RRGGBB 형식", defaultValue: "#5ee7f7", validation: { isRequired: true, pattern: { regex: /^#[0-9a-fA-F]{6}$/, message: "#RRGGBB 형식으로 입력하세요." } } }),
         defaultTheme: fields.select({ label: "기본 테마", options: [{ label: "다크", value: "dark" }, { label: "오로라", value: "aurora" }, { label: "포레스트", value: "forest" }, { label: "선셋", value: "sunset" }, { label: "페이퍼", value: "paper" }, { label: "라이트", value: "light" }], defaultValue: "dark" }),
         showJudgeSignals: fields.checkbox({ label: "홈에 PS 활동 표시", defaultValue: true }),
-        editorPostLabel: fields.text({ label: "글 작성 카드 이름", description: "예: 글, 아티클, 긴 글", ...required }),
-        showPostEditor: fields.checkbox({ label: "글 작성 카드 표시", defaultValue: true }),
-        editorSolutionLabel: fields.text({ label: "풀이 작성 카드 이름", description: "예: PS 풀이, 문제 풀이", ...required }),
-        showSolutionEditor: fields.checkbox({ label: "풀이 작성 카드 표시", defaultValue: true }),
-        editorLogLabel: fields.text({ label: "기록 작성 카드 이름", description: "예: 짧은 기록, 메모, 일기", ...required }),
-        showLogEditor: fields.checkbox({ label: "기록 작성 카드 표시", defaultValue: true }),
         navigation: fields.array(fields.object({
           label: fields.text({ label: "메뉴 이름", ...required }),
           labelEn: fields.text({ label: "영문 이름", ...required }),
@@ -480,21 +470,21 @@ export default config({
       },
     }),
     editor: singleton({
-      label: "작성 메뉴 설정",
+      label: "작성 항목 관리",
       path: "content/settings/editor",
       entryLayout: "form",
       format: "json",
       schema: {
         groupLabel: fields.text({ label: "작성 메뉴 그룹 이름", defaultValue: "콘텐츠 작성", ...required }),
         sections: fields.array(fields.object({
-          key: fields.text({ label: "고유 URL 키", description: "영문 소문자, 숫자와 하이픈만 사용하세요. 저장 후에는 변경하지 않는 것을 권장합니다.", validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: "영문 소문자, 숫자와 하이픈만 사용할 수 있습니다." } } }),
+          key: fields.text({ label: "항목 키", description: "기본 항목은 posts(글), solutions(PS 풀이), logs(짧은 기록)입니다. 다른 영문 키를 입력하면 새 형식이 만들어집니다.", validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: "영문 소문자, 숫자와 하이픈만 사용할 수 있습니다." } } }),
           label: fields.text({ label: "작성 카드 이름", description: "예: 리뷰, 프로젝트, 에세이", ...required }),
           description: fields.text({ label: "공개 목록 설명", multiline: true }),
           order: fields.integer({ label: "정렬 순서", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
           visible: fields.checkbox({ label: "작성기에 표시하고 공개", defaultValue: true }),
           showInNavigation: fields.checkbox({ label: "사이드바 메뉴에도 표시", defaultValue: false }),
           showOnHome: fields.checkbox({ label: "홈에도 최신 콘텐츠 표시", defaultValue: false }),
-        }), { label: "작성 하위 항목", description: "새 항목을 저장하면 자동 배포 후 콘텐츠 작성 화면에 별도 카드가 생깁니다.", itemLabel: (props) => props.fields.label.value || "새 작성 메뉴" }),
+        }), { label: "작성 하위 항목", description: "여기서 항목을 추가·삭제·정렬하세요. 저장하고 자동 배포가 끝나면 콘텐츠 작성 카드에 그대로 반영됩니다. 삭제해도 기존 글 파일은 안전하게 보존됩니다.", itemLabel: (props) => props.fields.label.value || "새 작성 항목" }),
       },
     }),
   },

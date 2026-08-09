@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractHeadings, getCustomPosts, getLogs, getPosts, getSolutions, searchSolutions } from "@/lib/content";
-import { customContentSections } from "@/lib/editor-settings";
+import { customContentSections, writerSections } from "@/lib/editor-settings";
 import { siteSettings, siteThemes } from "@/lib/settings";
 import { getManagedAlgorithms } from "@/lib/taxonomy";
 
@@ -38,6 +38,7 @@ describe("content pipeline", () => {
   });
 
   it("keeps custom writer sections and their empty content source safe", () => {
+    expect(writerSections.map((section) => section.key)).toEqual(["posts", "solutions", "logs"]);
     expect(customContentSections).toEqual([]);
     expect(getCustomPosts(false)).toEqual([]);
   });

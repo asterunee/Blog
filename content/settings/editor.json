@@ -1,4 +1,32 @@
 {
   "groupLabel": "콘텐츠 작성",
-  "sections": []
+  "sections": [
+    {
+      "key": "posts",
+      "label": "글",
+      "description": "긴 글과 일반적인 블로그 글을 작성합니다.",
+      "order": 10,
+      "visible": true,
+      "showInNavigation": false,
+      "showOnHome": false
+    },
+    {
+      "key": "solutions",
+      "label": "PS 풀이",
+      "description": "온라인 저지 문제 풀이와 구현을 작성합니다.",
+      "order": 20,
+      "visible": true,
+      "showInNavigation": false,
+      "showOnHome": false
+    },
+    {
+      "key": "logs",
+      "label": "짧은 기록",
+      "description": "짧은 메모와 일상의 기록을 작성합니다.",
+      "order": 30,
+      "visible": true,
+      "showInNavigation": false,
+      "showOnHome": false
+    }
+  ]
 }
