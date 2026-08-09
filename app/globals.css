@@ -78,6 +78,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .palette-input { height: 58px; padding: 0 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
 .palette-input input { flex: 1; border: 0; outline: 0; background: transparent; }
 .palette-input button { border: 0; background: transparent; color: var(--muted); }
+.palette-filter { min-height: 45px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 7px 16px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 10px; }
+.palette-filter select { min-width: 150px; border: 1px solid var(--border); background: var(--bg); padding: 6px 9px; color: var(--text); font-size: 10px; }
 .palette-results { padding: 7px; max-height: 360px; overflow: auto; }
 .palette-results a { display: flex; flex-direction: column; padding: 11px 12px; border-radius: 3px; }
 .palette-results a:hover { background: var(--border); }
@@ -537,6 +539,20 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
 .editorial-index-body {
   padding: 0 0 130px;
 }
+.unified-posts-page { padding-top: 42px; }
+.all-posts-controls { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 22px; padding-bottom: 36px; }
+.all-posts-controls label:first-child { min-height: 48px; display: flex; align-items: center; gap: 11px; padding: 0 2px; border-bottom: 1px solid var(--border); color: var(--muted); }
+.all-posts-controls input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 13px; }
+.all-posts-controls label:last-child { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 9px; }
+.all-posts-controls select { flex: 1; min-height: 34px; border: 1px solid var(--border); background: var(--surface); padding: 7px 10px; color: var(--text); font-size: 11px; }
+.unified-feed-title { margin: 17px 0 0; padding: 0 2px 23px; border-bottom: 1px solid var(--border); }
+.unified-post-feed article { border-bottom: 1px solid var(--border); }
+.unified-post-feed article > a { display: block; padding: 30px 3px 32px; transition: padding .2s, background .2s; }
+.unified-post-feed article > a:hover { padding-inline: 14px; background: color-mix(in srgb, var(--surface) 34%, transparent); }
+.unified-post-meta { display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 9px; }
+.unified-post-meta span { color: var(--cyan); }
+.unified-post-feed h2 { margin: 12px 0 8px; font: 500 23px/1.35 var(--font-display); letter-spacing: -.025em; }
+.unified-post-feed p { max-width: 760px; margin: 0 0 16px; color: var(--muted); font-size: 12px; line-height: 1.75; }
 .editorial-filter-bar {
   min-height: 66px;
   display: flex;
@@ -923,6 +939,8 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
   .editorial-about-closing { grid-template-columns: 1fr; gap: 18px; padding: 48px 0; }
   .editorial-about-closing > p { margin: 0; }
   .editorial-about-closing > a { width: fit-content; }
+  .all-posts-controls { grid-template-columns: 1fr; gap: 16px; }
+  .all-posts-controls label:last-child { min-height: 52px; }
 }
 .logbook article > a { padding-left:35px; }.logbook article > a > p { margin:0; color:var(--muted); font-size:12px; }.logbook article > a > p:first-child { color:var(--cyan); font:9px var(--font-display); text-transform:uppercase; letter-spacing:.12em; }
 @media (max-width:600px) { .logbook article > a { padding-left:15px; } }

@@ -7,8 +7,8 @@
       "description": "competitiveprogramming",
       "order": 0,
       "visible": true,
-      "showInNavigation": true,
-      "showOnHome": true
+      "showInNavigation": false,
+      "showOnHome": false
     },
     {
       "key": "problemsolving",
@@ -16,8 +16,8 @@
       "description": "Problem Solving",
       "order": 0,
       "visible": true,
-      "showInNavigation": true,
-      "showOnHome": true
+      "showInNavigation": false,
+      "showOnHome": false
     }
   ]
 }

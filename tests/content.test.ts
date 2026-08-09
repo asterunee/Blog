@@ -37,9 +37,9 @@ describe("content pipeline", () => {
     expect(algorithms.map((algorithm) => algorithm.order)).toEqual([...algorithms.map((algorithm) => algorithm.order)].sort((a, b) => a - b));
   });
 
-  it("keeps custom writer sections and their empty content source safe", () => {
-    expect(writerSections).toEqual([]);
-    expect(customContentSections).toEqual([]);
-    expect(getCustomPosts(false)).toEqual([]);
+  it("loads user-managed writer sections and public custom content safely", () => {
+    expect(new Set(writerSections.map((section) => section.key)).size).toBe(writerSections.length);
+    expect(customContentSections.every((section) => !section.builtIn)).toBe(true);
+    expect(getCustomPosts(false).every((post) => !post.draft)).toBe(true);
   });
 });

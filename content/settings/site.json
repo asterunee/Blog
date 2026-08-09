@@ -17,9 +17,9 @@
   "showJudgeSignals": true,
   "navigation": [
     {
-      "label": "소개",
-      "labelEn": "About",
-      "href": "/about",
+      "label": "전체 글",
+      "labelEn": "Posts",
+      "href": "/posts",
       "visible": true
     },
     {
@@ -29,39 +29,15 @@
       "visible": true
     },
     {
-      "label": "글",
-      "labelEn": "Posts",
-      "href": "/posts",
-      "visible": true
-    },
-    {
-      "label": "풀이",
-      "labelEn": "Solutions",
-      "href": "/solutions",
-      "visible": true
-    },
-    {
       "label": "알고리즘",
       "labelEn": "Algorithms",
       "href": "/algorithms",
       "visible": true
     },
     {
-      "label": "태그",
-      "labelEn": "Tags",
-      "href": "/tags",
-      "visible": true
-    },
-    {
-      "label": "아카이브",
-      "labelEn": "Archive",
-      "href": "/archive",
-      "visible": true
-    },
-    {
-      "label": "기록",
-      "labelEn": "Log",
-      "href": "/log",
+      "label": "소개",
+      "labelEn": "About",
+      "href": "/about",
       "visible": true
     }
   ]
