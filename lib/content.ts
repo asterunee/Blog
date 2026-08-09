@@ -6,27 +6,33 @@ import { z } from "zod";
 
 const solutionSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
-  date: z.string(), updated: z.string(), author: z.literal("asterunee"),
+  date: z.string(), updated: z.string(), author: z.string().min(1),
   judge: z.string(), problemId: z.string(), problemUrl: z.string().url(),
   difficulty: z.number().int().nonnegative(), tier: z.string(), tags: z.array(z.string()).min(1),
-  language: z.literal("cpp"), solveTime: z.number().positive(), featured: z.boolean(), draft: z.boolean(),
+  language: z.string().default("C++17"), solveTime: z.number().positive(), featured: z.boolean(), draft: z.boolean(),
   status: z.string().default("Solved"), timeLimit: z.string().default("2 seconds"), memoryLimit: z.string().default("256 MB"),
+  contest: z.string().default(""), solutionType: z.string().default(""), runtime: z.string().default(""), memoryUsed: z.string().default(""),
+  coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""),
 });
 
 export type Solution = z.infer<typeof solutionSchema> & { body: string; readingMinutes: number };
 
 const postSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
-  date: z.string(), updated: z.string(), author: z.literal("asterunee"),
-  category: z.string(), tags: z.array(z.string()).default([]), featured: z.boolean().default(false), draft: z.boolean(),
+  date: z.string(), updated: z.string(), author: z.string().min(1),
+  category: z.string(), tags: z.array(z.string()).default([]), series: z.string().default(""),
+  coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), accentColor: z.string().default(""),
+  seoTitle: z.string().default(""), seoDescription: z.string().default(""), canonicalUrl: z.string().default(""),
+  showToc: z.boolean().default(true), featured: z.boolean().default(false), pinned: z.boolean().default(false), draft: z.boolean(),
 });
 
 export type BlogPost = z.infer<typeof postSchema> & { body: string; readingMinutes: number };
 
 const logSchema = z.object({
   title: z.string().min(1), slug: z.string().min(1), description: z.string().min(1),
-  date: z.string(), updated: z.string(), author: z.literal("asterunee"),
-  type: z.string(), tags: z.array(z.string()).default([]), draft: z.boolean(),
+  date: z.string(), updated: z.string(), author: z.string().min(1),
+  type: z.string(), tags: z.array(z.string()).default([]), mood: z.string().default(""), location: z.string().default(""),
+  coverImage: z.string().nullable().default(null), coverAlt: z.string().default(""), featured: z.boolean().default(false), draft: z.boolean(),
 });
 
 export type LogPost = z.infer<typeof logSchema> & { body: string; readingMinutes: number };
@@ -54,7 +60,7 @@ export function getPosts(includeDrafts = process.env.NODE_ENV !== "production"):
     const parsed = postSchema.safeParse({ ...data, slug: data.slug || file.replace(/\.mdx$/, "") });
     if (!parsed.success) throw new Error(`Invalid frontmatter in ${file}: ${parsed.error.message}`);
     return { ...parsed.data, body: content, readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)) };
-  }).filter((post) => includeDrafts || !post.draft).sort((a, b) => b.date.localeCompare(a.date));
+  }).filter((post) => includeDrafts || !post.draft).sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.date.localeCompare(a.date));
 }
 
 export function getPost(slug: string) { return getPosts().find((post) => post.slug === slug); }

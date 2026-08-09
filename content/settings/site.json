@@ -1,0 +1,19 @@
+{
+  "siteName": "asterunee",
+  "tagline": "별과 달 사이의 기록",
+  "description": "코드와 배움, 생각과 일상을 기록하는 개인 블로그",
+  "intro": "코드와 배움, 생각과 일상에서 발견한 것들.",
+  "sidebarIntro": "코드와 배움, 생각과 일상의 조각을 차분히 남깁니다.",
+  "motto": "Observe deeply. Write honestly.",
+  "supportingLine": "Thoughts gathered across an endless night.",
+  "role": "Developer, Competitive Programmer & Writer",
+  "nowTitle": "",
+  "nowDescription": "",
+  "backgroundImage": "/images/observatory-hero.webp",
+  "backgroundPosition": "center",
+  "backgroundStrength": 16,
+  "backgroundPattern": "stars",
+  "accentColor": "#5ee7f7",
+  "defaultTheme": "dark",
+  "showJudgeSignals": true
+}

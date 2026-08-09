@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { extractHeadings, getLogs, getPosts, getSolutions, searchSolutions } from "@/lib/content";
+import { siteSettings, siteThemes } from "@/lib/settings";
 
 describe("content pipeline", () => {
-  it("validates and loads general posts", () => {
-    const posts = getPosts(true);
-    expect(posts.length).toBeGreaterThanOrEqual(2);
-    expect(posts.every((post) => post.author === "asterunee")).toBe(true);
+  it("starts without seeded or demo content", () => {
+    expect(getPosts(true)).toHaveLength(0);
+    expect(getSolutions(true)).toHaveLength(0);
+    expect(getLogs(true)).toHaveLength(0);
   });
 
-  it("does not ship placeholder solutions", () => {
-    const solutions = getSolutions(true);
-    expect(solutions).toHaveLength(0);
-    expect(searchSolutions(solutions, "dsu")).toEqual([]);
+  it("keeps empty solution search stable", () => {
+    expect(searchSolutions([], "dsu")).toEqual([]);
   });
 
   it("extracts stable Korean heading ids", () => {
@@ -21,9 +20,9 @@ describe("content pipeline", () => {
     ]);
   });
 
-  it("loads Git-managed logs", () => {
-    const logs = getLogs(true);
-    expect(logs[0].author).toBe("asterunee");
-    expect(logs[0].body).toContain("## 바꾸고 싶었던 것");
+  it("loads editable site settings with a valid theme", () => {
+    expect(siteSettings.siteName).toBe("asterunee");
+    expect(siteThemes).toContain(siteSettings.defaultTheme);
+    expect(siteSettings.backgroundStrength).toBeGreaterThanOrEqual(0);
   });
 });

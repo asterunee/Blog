@@ -1,4 +1,6 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -7,5 +9,39 @@ import { TableOfContents } from "@/components/toc";
 import { extractHeadings, getPost, getPosts } from "@/lib/content";
 
 export function generateStaticParams() { return getPosts(false).map((post) => ({ slug: post.slug })); }
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { const { slug } = await params; const post = getPost(slug); return post ? { title: post.title, description: post.description, alternates: { canonical: `/posts/${slug}` }, openGraph: { type: "article", title: post.title, description: post.description, publishedTime: post.date, modifiedTime: post.updated, tags: post.tags } } : {}; }
-export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) { const { slug } = await params; const post = getPost(slug); if (!post) notFound(); return <div className="article-shell"><header className="article-header"><Link href="/posts" className="back-link"><ArrowLeft size={15} /> 모든 글</Link><p>{post.category} · {post.date}</p><h1>{post.title}</h1><p className="article-description">{post.description}</p><div className="tag-row">{post.tags.map((tag) => <Link href={`/tags/${tag}`} key={tag}>{tag}</Link>)}</div><dl className="article-facts"><div><dt>Published</dt><dd>{post.date}</dd></div><div><dt>Updated</dt><dd>{post.updated}</dd></div><div><dt>Reading time</dt><dd>{post.readingMinutes} min</dd></div><div><dt>Category</dt><dd>{post.category}</dd></div></dl></header><div className="article-layout"><TableOfContents headings={extractHeadings(post.body)} /><article className="prose"><MdxContent source={post.body} /></article></div></div>; }
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPost(slug);
+  if (!post) return {};
+  const title = post.seoTitle || post.title;
+  const description = post.seoDescription || post.description;
+  return {
+    title,
+    description,
+    alternates: { canonical: post.canonicalUrl || `/posts/${slug}` },
+    openGraph: { type: "article", title, description, publishedTime: post.date, modifiedTime: post.updated, tags: post.tags, images: post.coverImage ? [{ url: post.coverImage, alt: post.coverAlt || post.title }] : undefined },
+  };
+}
+
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = getPost(slug);
+  if (!post) notFound();
+  const headings = extractHeadings(post.body);
+  const showToc = post.showToc && headings.length > 0;
+  const articleStyle = post.accentColor ? { "--cyan": post.accentColor } as CSSProperties : undefined;
+
+  return <div className="article-shell" style={articleStyle}>
+    <header className="article-header">
+      <Link href="/posts" className="back-link"><ArrowLeft size={15} /> 모든 글</Link>
+      <p>{post.category} · {post.date}{post.series ? ` · ${post.series}` : ""}</p>
+      <h1>{post.title}</h1>
+      <p className="article-description">{post.description}</p>
+      <div className="tag-row">{post.tags.map((tag) => <Link href={`/tags/${tag}`} key={tag}>{tag}</Link>)}</div>
+      <dl className="article-facts"><div><dt>Published</dt><dd>{post.date}</dd></div><div><dt>Updated</dt><dd>{post.updated}</dd></div><div><dt>Reading time</dt><dd>{post.readingMinutes} min</dd></div><div><dt>Category</dt><dd>{post.category}</dd></div></dl>
+      {post.coverImage && <div className="article-cover"><Image src={post.coverImage} alt={post.coverAlt || ""} fill priority sizes="(max-width: 900px) 100vw, 820px" /></div>}
+    </header>
+    <div className={`article-layout${showToc ? "" : " without-toc"}`}>{showToc && <TableOfContents headings={headings} />}<article className="prose"><MdxContent source={post.body} /></article></div>
+  </div>;
+}
