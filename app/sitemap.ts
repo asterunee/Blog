@@ -1,0 +1,5 @@
+import type { MetadataRoute } from "next";
+import { getSolutions } from "@/lib/content";
+import { siteConfig } from "@/lib/site";
+
+export default function sitemap(): MetadataRoute.Sitemap { const solutions = getSolutions(false); const pages = ["", "/solutions", "/algorithms", "/library", "/log", "/about"].map((path) => ({ url: `${siteConfig.url}${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "" ? 1 : .7 })); const posts = solutions.map((post) => ({ url: `${siteConfig.url}/solutions/${post.slug}`, lastModified: new Date(post.updated), changeFrequency: "monthly" as const, priority: .8 })); const taxonomies = [...new Set(solutions.flatMap((post) => post.tags))].map((tag) => ({ url: `${siteConfig.url}/tags/${tag}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: .5 })); const judges = [...new Set(solutions.map((post) => post.judge))].map((judge) => ({ url: `${siteConfig.url}/judge/${encodeURIComponent(judge)}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: .5 })); return [...pages, ...posts, ...taxonomies, ...judges]; }

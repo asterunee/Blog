@@ -1,0 +1,65 @@
+---
+title: "고요한 궤도의 최단 항로"
+slug: "orbital-route"
+description: "다익스트라의 불변식을 관측 기록처럼 따라가는 예시 풀이"
+date: "2026-08-05"
+updated: "2026-08-07"
+author: "asterunee"
+judge: "Example Judge"
+problemId: "SAMPLE-002"
+problemUrl: "https://example.com/problems/sample-002"
+difficulty: 1900
+tier: "Platinum V (예상)"
+tags: ["graph", "shortest-path"]
+language: "cpp"
+solveTime: 54
+featured: true
+draft: false
+status: "Example"
+timeLimit: "3 seconds"
+memoryLimit: "512 MB"
+---
+
+> 실제 문제 풀이가 아닌, 블로그 기능 확인용 **예시 콘텐츠**입니다.
+
+## 처음의 관찰
+
+모든 항로의 비용이 음이 아니므로 가장 가까운 미확정 행성부터 확정할 수 있다.
+
+## 풀이를 도출한 과정
+
+우선순위 큐에서 꺼낸 거리와 현재 최단 거리 배열이 다르면 오래된 관측이므로 버린다.
+
+## 핵심 아이디어
+
+확정되지 않은 정점 가운데 거리가 최소인 정점의 거리는 이후 더 작아질 수 없다.
+
+## 정당성 증명
+
+그보다 짧은 우회로가 있다면 그 경로 위에는 먼저 꺼냈어야 할 더 가까운 미확정 정점이 존재해 모순이다.
+
+## 시간·공간 복잡도
+
+시간은 $O((V+E)\log V)$, 공간은 $O(V+E)$이다.
+
+## 구현 과정
+
+```cpp
+// file: main.cpp; highlight: 10,11
+#include "library/template.hpp"
+
+using namespace std;
+using namespace suisen;
+
+int main() {
+    // suisen-cp/cp-library-cpp 기반 구현이 들어갈 자리입니다.
+    return 0;
+```
+
+## 틀렸던 접근과 반례
+
+방문 표시를 큐에 넣는 순간 설정하면 더 짧은 경로가 뒤늦게 발견되는 경우를 놓친다.
+
+## 디버깅 기록
+
+거리 합의 자료형을 `long long`으로 바꾸고 무한대 덧셈을 피했다.

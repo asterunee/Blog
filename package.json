@@ -1,0 +1,44 @@
+{
+  "name": "asterunee-observatory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "validate": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "new:solution": "node scripts/new-solution.mjs"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "latest",
+    "gray-matter": "latest",
+    "katex": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "next-mdx-remote": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "rehype-autolink-headings": "latest",
+    "rehype-katex": "latest",
+    "rehype-slug": "latest",
+    "remark-gfm": "latest",
+    "remark-math": "latest",
+    "reading-time": "latest",
+    "shiki": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
