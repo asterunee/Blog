@@ -7,7 +7,7 @@ import { getCategoryName } from "@/lib/taxonomy";
 export function ContentIndexCard({ entry }: { entry: ContentIndexEntry }) {
   const categoryName = getCategoryName(entry.category);
   return <article className="blog-post-card">
-    <Link href={entry.href}>
+    <Link href={entry.href} prefetch={false}>
       {entry.coverImage && <div className="post-card-cover"><Image src={entry.coverImage} alt={entry.coverAlt || ""} fill sizes="(max-width: 780px) 100vw, 760px" /></div>}
       <div className="post-card-top"><span>{entry.kind} · {categoryName}</span><span>{entry.readingMinutes}분</span></div>
       <h2>{entry.title}</h2>

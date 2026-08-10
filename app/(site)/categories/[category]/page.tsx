@@ -26,6 +26,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   const name = managedCategory?.name || category;
   return <div className="page-shell archive-page">
     <header className="page-title"><Link className="back-link category-back" href="/categories"><ArrowLeft size={14} /> 모든 카테고리</Link><h1>{name}</h1><p>{managedCategory?.description || `${name}에 관한 글과 기록을 모았습니다.`}</p></header>
-    {entries.length ? <section className="category-entry-feed">{entries.map((entry) => <Link href={entry.href} key={entry.href}><div><span>{entry.kind}</span><time>{entry.date}</time></div><h2>{entry.title}</h2><p>{entry.description}</p><footer><div>{entry.tags.slice(0, 5).map((tag) => <span key={tag}>#{tag}</span>)}</div><ArrowRight size={15} /></footer></Link>)}</section> : <section className="editorial-empty"><h2>아직 공개된 글이 없습니다</h2><p>이 카테고리에 새 콘텐츠가 공개되면 자동으로 표시됩니다.</p></section>}
+    {entries.length ? <section className="category-entry-feed">{entries.map((entry) => <Link href={entry.href} key={entry.href} prefetch={false}><div><span>{entry.kind}</span><time>{entry.date}</time></div><h2>{entry.title}</h2><p>{entry.description}</p><footer><div>{entry.tags.slice(0, 5).map((tag) => <span key={tag}>#{tag}</span>)}</div><ArrowRight size={15} /></footer></Link>)}</section> : <section className="editorial-empty"><h2>아직 공개된 글이 없습니다</h2><p>이 카테고리에 새 콘텐츠가 공개되면 자동으로 표시됩니다.</p></section>}
   </div>;
 }

@@ -57,7 +57,7 @@ export default function CategoriesPage() {
       </main>
 
       <aside className="editorial-sidebar category-recent-sidebar">
-        <section><h2>최근 업데이트</h2>{recent.length ? <div className="editorial-recent-list">{recent.slice(0, 7).map((entry) => <Link href={entry.href} key={entry.href}><small>{entry.kind} · {entry.date}</small><span>{entry.title}</span></Link>)}</div> : <p>아직 공개된 기록이 없습니다.</p>}</section>
+        <section><h2>최근 업데이트</h2>{recent.length ? <div className="editorial-recent-list">{recent.slice(0, 7).map((entry) => <Link href={entry.href} key={entry.href} prefetch={false}><small>{entry.kind} · {entry.date}</small><span>{entry.title}</span></Link>)}</div> : <p>아직 공개된 기록이 없습니다.</p>}</section>
         <Link className="editorial-side-link" href="/archive">연도별 아카이브 보기 <ArrowRight size={14} /></Link>
       </aside>
     </div>

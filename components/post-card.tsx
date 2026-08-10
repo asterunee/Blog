@@ -8,7 +8,7 @@ export function PostCard({ post }: { post: BlogPost }) {
   const categoryName = getCategoryName(post.category);
   const contentTypeName = getContentTypeName(post.contentType);
   return <article className="blog-post-card" style={post.accentColor ? { borderColor: post.accentColor } : undefined}>
-    <Link href={`/posts/${post.slug}`}>
+    <Link href={`/posts/${post.slug}`} prefetch={false}>
       {post.coverImage && <div className="post-card-cover"><Image src={post.coverImage} alt={post.coverAlt || ""} fill sizes="(max-width: 780px) 100vw, 760px" /></div>}
       <div className="post-card-top"><span>{contentTypeName} · {categoryName}</span><span>{post.pinned ? "고정 · " : ""}{post.readingMinutes}분</span></div>
       <h2>{post.title}</h2>

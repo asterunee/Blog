@@ -23,7 +23,7 @@ export default function Home() {
 
     <aside className="blog-widgets">
       <Link className="widget-search" href="/posts"><Search size={15} /> 글 둘러보기</Link>
-      <section className="blog-widget"><h2>최근 업데이트</h2>{recent.length ? recent.slice(0, 6).map((post) => <Link key={post.href} href={post.href}><span>{post.title}</span><time>{post.updated} · {post.kind}</time></Link>) : <p className="widget-empty">아직 공개된 글이 없습니다.</p>}</section>
+      <section className="blog-widget"><h2>최근 업데이트</h2>{recent.length ? recent.slice(0, 6).map((post) => <Link key={post.href} href={post.href} prefetch={false}><span>{post.title}</span><time>{post.updated} · {post.kind}</time></Link>) : <p className="widget-empty">아직 공개된 글이 없습니다.</p>}</section>
       {tags.length > 0 && <section className="blog-widget"><h2>태그</h2><div className="widget-tags">{tags.map((tag) => <Link key={tag} href={`/tags/${tag}`}>#{tag}</Link>)}</div></section>}
       <section className="blog-widget subscribe-widget"><h3><Rss size={13} /> 새 글 구독</h3><p>RSS 리더에서 새 글과 풀이를 받아볼 수 있습니다.</p><Link href="/rss.xml">RSS 피드 구독하기 →</Link></section>
       {siteConfig.nowTitle && <section className="blog-widget study-widget"><h3>{siteConfig.nowTitle}</h3><p>{siteConfig.nowDescription}</p><Link href="/archive">아카이브 보기 →</Link></section>}
