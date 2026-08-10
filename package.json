@@ -18,6 +18,7 @@
     "@keystatic/next": "^5.0.4",
     "@markdoc/markdoc": "^0.5.9",
     "@tailwindcss/postcss": "latest",
+    "@vercel/blob": "^2.7.0",
     "gray-matter": "latest",
     "katex": "latest",
     "lucide-react": "latest",

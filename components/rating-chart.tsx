@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ExternalLink } from "lucide-react";
+import { getRatingTitle, type RatingJudge } from "@/lib/ratings";
 
-type RatingPoint = { date: string; rating: number; contest: string; rank: number };
+type RatingPoint = { date: string; rating: number; change: number; contest: string; rank: number; url: string };
 type RatingsResponse = { codeforces: RatingPoint[]; atcoder: RatingPoint[] };
 
-export function RatingChart({ judge }: { judge: "Codeforces" | "AtCoder" }) {
+export function RatingChart({ judge }: { judge: RatingJudge }) {
   const [points, setPoints] = useState<RatingPoint[]>([]);
   const key = judge.toLowerCase() as "codeforces" | "atcoder";
 
@@ -32,9 +34,10 @@ export function RatingChart({ judge }: { judge: "Codeforces" | "AtCoder" }) {
 
   if (!chart) return <div className="rating-chart-loading">레이팅 기록을 불러오는 중…</div>;
   const latest = chart.coordinates.at(-1)!;
+  const title = getRatingTitle(judge, latest.rating);
 
   return <div className="rating-chart-wrap">
-    <div className="rating-chart-summary"><span>현재 레이팅</span><strong>{latest.rating}</strong><small>{points.length}회 반영</small></div>
+    <div className="rating-chart-summary"><span>현재 레이팅</span><strong>{latest.rating} <em>({title})</em></strong><small>{points.length}회 반영</small></div>
     <svg className="rating-chart" viewBox={`0 0 ${chart.width} ${chart.height}`} role="img" aria-label={`${judge} 레이팅 변화 그래프`}>
       {[0, 1, 2].map((line) => { const y = 22 + line * 73; return <line key={line} x1="22" y1={y} x2="538" y2={y} className="rating-grid-line" />; })}
       <polyline points={chart.path} className="rating-line" />
@@ -42,5 +45,6 @@ export function RatingChart({ judge }: { judge: "Codeforces" | "AtCoder" }) {
       <text x="22" y="16" className="rating-axis-label">{chart.max}</text><text x="22" y="184" className="rating-axis-label">{chart.min}</text>
     </svg>
     <div className="rating-chart-caption"><span>{points[0].date}</span><span>{latest.date}</span></div>
+    <details className="rating-history"><summary>대회 기록 자세히 보기 <ChevronDown size={14} /></summary><div>{[...points].reverse().map((point) => <a key={`${point.date}-${point.contest}`} href={point.url} target="_blank" rel="noreferrer"><time>{point.date}</time><span>{point.contest}</span><small>{point.rank}위</small><b className={point.change >= 0 ? "positive" : "negative"}>{point.change >= 0 ? "+" : ""}{point.change}</b><em>{point.rating}</em><ExternalLink size={11} /></a>)}</div></details>
   </div>;
 }

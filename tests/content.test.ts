@@ -4,6 +4,8 @@ import { customContentSections, writerSections } from "@/lib/editor-settings";
 import { siteSettings, siteThemes } from "@/lib/settings";
 import { getManagedAlgorithms } from "@/lib/taxonomy";
 import { isKeystaticOwner, keystaticOwner } from "@/lib/keystatic-owner";
+import { parseCommentInput } from "@/lib/comments";
+import { getRatingTitle } from "@/lib/ratings";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -53,5 +55,16 @@ describe("content pipeline", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ login: keystaticOwner.login, id: 1 }), { status: 200 })));
     await expect(isKeystaticOwner("another-token")).resolves.toBe(false);
     await expect(isKeystaticOwner()).resolves.toBe(false);
+  });
+
+  it("maps online judge ratings to their public titles", () => {
+    expect(getRatingTitle("Codeforces", 1501)).toBe("Specialist");
+    expect(getRatingTitle("AtCoder", 1916)).toBe("Blue");
+  });
+
+  it("validates anonymous comments before storage", () => {
+    expect(parseCommentInput({ page: "/posts/example", name: "", body: "좋은 글입니다." })).toEqual({ ok: true, value: { page: "/posts/example", name: "익명", body: "좋은 글입니다." } });
+    expect(parseCommentInput({ page: "https://example.com", name: "test", body: "comment" }).ok).toBe(false);
+    expect(parseCommentInput({ page: "/posts/example", name: "test", body: "" }).ok).toBe(false);
   });
 });

@@ -2,22 +2,22 @@ import { NextResponse } from "next/server";
 
 export const revalidate = 21600;
 
-type RatingPoint = { date: string; rating: number; contest: string; rank: number };
-type CodeforcesChange = { ratingUpdateTimeSeconds: number; newRating: number; contestName: string; rank: number };
-type AtCoderChange = { IsRated: boolean; EndTime: string; NewRating: number; ContestName: string; ContestNameEn?: string; Place: number };
+type RatingPoint = { date: string; rating: number; change: number; contest: string; rank: number; url: string };
+type CodeforcesChange = { contestId: number; ratingUpdateTimeSeconds: number; oldRating: number; newRating: number; contestName: string; rank: number };
+type AtCoderChange = { IsRated: boolean; EndTime: string; OldRating: number; NewRating: number; ContestName: string; ContestNameEn?: string; ContestScreenName: string; Place: number };
 
 async function codeforces(): Promise<RatingPoint[]> {
   const response = await fetch("https://codeforces.com/api/user.rating?handle=asterunee", { next: { revalidate: 21600 }, signal: AbortSignal.timeout(5000) });
   const data = await response.json() as { status?: string; result?: CodeforcesChange[] };
   if (!response.ok || data.status !== "OK" || !Array.isArray(data.result)) throw new Error("Codeforces rating unavailable");
-  return data.result.map((change) => ({ date: new Date(change.ratingUpdateTimeSeconds * 1000).toISOString().slice(0, 10), rating: change.newRating, contest: change.contestName, rank: change.rank }));
+  return data.result.map((change) => ({ date: new Date(change.ratingUpdateTimeSeconds * 1000).toISOString().slice(0, 10), rating: change.newRating, change: change.newRating - change.oldRating, contest: change.contestName, rank: change.rank, url: `https://codeforces.com/contest/${change.contestId}` }));
 }
 
 async function atcoder(): Promise<RatingPoint[]> {
   const response = await fetch("https://atcoder.jp/users/asterunee/history/json", { next: { revalidate: 21600 }, signal: AbortSignal.timeout(5000) });
   const data = await response.json() as AtCoderChange[];
   if (!response.ok || !Array.isArray(data)) throw new Error("AtCoder rating unavailable");
-  return data.filter((change) => change.IsRated).map((change) => ({ date: new Date(change.EndTime).toISOString().slice(0, 10), rating: change.NewRating, contest: change.ContestNameEn || change.ContestName, rank: change.Place }));
+  return data.filter((change) => change.IsRated).map((change) => ({ date: new Date(change.EndTime).toISOString().slice(0, 10), rating: change.NewRating, change: change.NewRating - change.OldRating, contest: change.ContestNameEn || change.ContestName, rank: change.Place, url: `https://${change.ContestScreenName}` }));
 }
 
 export async function GET() {
