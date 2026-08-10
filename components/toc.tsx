@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 export function TableOfContents({ headings }: { headings: { title: string; id: string }[] }) {
   const [active, setActive] = useState(headings[0]?.id || "");
+  const activeRef = useRef(headings[0]?.id || "");
   const progressRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -12,6 +13,7 @@ export function TableOfContents({ headings }: { headings: { title: string; id: s
     });
     let positions: { id: string; top: number }[] = [];
     let frame = 0;
+    const nativeProgress = CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const measure = () => {
       positions = sections.map(({ id, element }) => ({ id, top: element.getBoundingClientRect().top + window.scrollY }));
@@ -22,7 +24,7 @@ export function TableOfContents({ headings }: { headings: { title: string; id: s
       frame = 0;
       const height = document.documentElement.scrollHeight - innerHeight;
       const progress = height > 0 ? Math.min(1, Math.max(0, scrollY / height)) : 0;
-      progressRef.current?.style.setProperty("--reading-progress", String(progress));
+      if (!nativeProgress) progressRef.current?.style.setProperty("--reading-progress", String(progress));
 
       const marker = scrollY + 160;
       let next = positions[0]?.id || "";
@@ -30,7 +32,10 @@ export function TableOfContents({ headings }: { headings: { title: string; id: s
         if (position.top > marker) break;
         next = position.id;
       }
-      if (next) setActive((current) => current === next ? current : next);
+      if (next && next !== activeRef.current) {
+        activeRef.current = next;
+        setActive(next);
+      }
     };
 
     function requestUpdate() {

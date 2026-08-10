@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Languages, Menu, Monitor, MoonStar, Palette, Search, Sun, X } from "lucide-react";
 import { profiles, siteConfig } from "@/lib/site";
 
 type SearchItem = { title: string; href: string; description: string; tags: string[]; category?: string; categoryName?: string };
 const themeOptions = [
-  { id: "dark", label: "다크", color: "#5ee7f7", icon: MoonStar },
+  { id: "dark", label: "다크", color: siteConfig.accentColor, icon: MoonStar },
   { id: "aurora", label: "오로라", color: "#72f1b8", icon: Palette },
   { id: "forest", label: "숲", color: "#86d293", icon: MoonStar },
   { id: "sunset", label: "노을", color: "#ff9f7a", icon: Sun },
-  { id: "paper", label: "종이", color: "#9a6b3f", icon: Sun },
+  { id: "paper", label: "종이", color: "#94643a", icon: Sun },
   { id: "light", label: "밝게", color: "#087f95", icon: Sun },
   { id: "system", label: "시스템", color: "#91a4be", icon: Monitor },
 ] as const;
@@ -30,6 +31,7 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
   const [language, setLanguage] = useState<"ko" | "en">("ko");
   const fallbackTheme: Theme = isTheme(siteConfig.defaultTheme) ? siteConfig.defaultTheme : "dark";
   const [theme, setTheme] = useState<Theme>(fallbackTheme);
+  const [preferencesReady, setPreferencesReady] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,11 +39,13 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
       const savedTheme = localStorage.getItem("asterunee-theme");
       setTheme(isTheme(savedTheme) ? savedTheme : fallbackTheme);
       setLanguage(localStorage.getItem("asterunee-language") === "en" ? "en" : "ko");
+      setPreferencesReady(true);
     });
     return () => cancelAnimationFrame(frame);
   }, [fallbackTheme]);
 
   useEffect(() => {
+    if (!preferencesReady) return;
     const root = document.documentElement;
     const media = matchMedia("(prefers-color-scheme: light)");
     const apply = () => {
@@ -50,16 +54,18 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
       root.dataset.themePreference = theme;
     };
     apply();
-    media.addEventListener("change", apply);
     localStorage.setItem("asterunee-theme", theme);
+    if (theme !== "system") return;
+    media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
-  }, [theme]);
+  }, [preferencesReady, theme]);
 
   useEffect(() => {
+    if (!preferencesReady) return;
     document.documentElement.lang = language;
     document.documentElement.dataset.lang = language;
     localStorage.setItem("asterunee-language", language);
-  }, [language]);
+  }, [language, preferencesReady]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -77,7 +83,17 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
     return () => removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => { if (paletteOpen) setTimeout(() => inputRef.current?.focus(), 20); }, [paletteOpen]);
+  useEffect(() => {
+    if (!paletteOpen) return;
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [paletteOpen]);
+
+  function chooseTheme(nextTheme: Theme) {
+    localStorage.setItem("asterunee-theme", nextTheme);
+    setTheme(nextTheme);
+    setThemeMenuOpen(false);
+  }
 
   const results = useMemo(() => {
     const normalizedQuery = query.toLowerCase();
@@ -98,7 +114,7 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
         <button className="icon-button theme-trigger" onClick={() => setThemeMenuOpen((value) => !value)} aria-expanded={themeMenuOpen} aria-label={`테마: ${activeTheme.label}`} title={`테마: ${activeTheme.label}`}><ActiveThemeIcon size={18} /><span>테마 · {activeTheme.label}</span></button>
         {themeMenuOpen && <div className="theme-menu" role="menu" aria-label="테마 선택">
           <p>화면 테마</p>
-          {themeOptions.map((option) => <button key={option.id} role="menuitemradio" aria-checked={theme === option.id} onClick={() => { setTheme(option.id); setThemeMenuOpen(false); }}><i style={{ background: option.color }} /><span>{option.label}</span>{theme === option.id && <Check size={14} />}</button>)}
+          {themeOptions.map((option) => <button key={option.id} role="menuitemradio" aria-checked={theme === option.id} onClick={() => chooseTheme(option.id)}><i style={{ "--theme-swatch": option.color } as CSSProperties} /><span>{option.label}</span>{theme === option.id && <Check size={14} />}</button>)}
         </div>}
       </div>
       <button className="icon-button menu-trigger" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="메뉴"><Menu size={20} /></button>
