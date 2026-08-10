@@ -1,0 +1,11 @@
+{
+  "title": "Welcome to the asterunee blog!",
+  "summary": "asterunee의 블로그에 오신것을 환영합니다!\n이곳에선 asterunee의 cp, ps, 일상 등 다양한 정보를 알 수 있습니다!",
+  "label": "공지사항",
+  "publishedAt": "2026-08-10",
+  "linkLabel": "자세히 보기",
+  "newTab": false,
+  "backgroundPosition": "center",
+  "priority": 0,
+  "visible": true
+}
