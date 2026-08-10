@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MdxContent } from "@/components/mdx-content";
 import { ArticleAuthor } from "@/components/article-author";
+import { Comments } from "@/components/comments";
 import { TableOfContents } from "@/components/toc";
 import { extractHeadings, getPost, getPosts } from "@/lib/content";
 import { getCategoryName, getContentTypeName } from "@/lib/taxonomy";
@@ -54,6 +55,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     </header>
     <div className={`article-layout${showToc ? "" : " without-toc"}`}>{showToc && <TableOfContents headings={headings} />}<article className="prose"><MdxContent source={post.body} /></article></div>
     <ArticleAuthor name={post.author} />
+    <Comments />
     {related.length > 0 && <section className="related-posts"><header><h2>같은 카테고리의 글</h2></header><div>{related.map((entry) => <Link href={`/posts/${entry.slug}`} key={entry.slug}><span>{entry.date} · {entry.readingMinutes}분</span><h3>{entry.title}</h3><p>{entry.description}</p></Link>)}</div></section>}
     <nav className="post-nav">{prev ? <Link href={`/posts/${prev.slug}`}><span>이전 글</span><b><ArrowLeft size={15} /> {prev.title}</b></Link> : <span />}{next ? <Link href={`/posts/${next.slug}`}><span>다음 글</span><b>{next.title} <ArrowRight size={15} /></b></Link> : <span />}</nav>
   </div>;

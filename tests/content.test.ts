@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { extractHeadings, getCustomPosts, getLogs, getPosts, getSolutions, searchSolutions } from "@/lib/content";
 import { customContentSections, writerSections } from "@/lib/editor-settings";
 import { siteSettings, siteThemes } from "@/lib/settings";
 import { getManagedAlgorithms } from "@/lib/taxonomy";
+import { isKeystaticOwner, keystaticOwner } from "@/lib/keystatic-owner";
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("content pipeline", () => {
   it("parses Keystatic content and keeps drafts out of the public feed", () => {
@@ -41,5 +44,14 @@ describe("content pipeline", () => {
     expect(new Set(writerSections.map((section) => section.key)).size).toBe(writerSections.length);
     expect(customContentSections.every((section) => !section.builtIn)).toBe(true);
     expect(getCustomPosts(false).every((post) => !post.draft)).toBe(true);
+  });
+
+  it("only accepts the configured GitHub owner for the administrator", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(keystaticOwner), { status: 200 })));
+    await expect(isKeystaticOwner("owner-token")).resolves.toBe(true);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ login: keystaticOwner.login, id: 1 }), { status: 200 })));
+    await expect(isKeystaticOwner("another-token")).resolves.toBe(false);
+    await expect(isKeystaticOwner()).resolves.toBe(false);
   });
 });

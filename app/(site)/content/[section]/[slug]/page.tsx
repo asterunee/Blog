@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ArticleAuthor } from "@/components/article-author";
+import { Comments } from "@/components/comments";
 import { MdxContent } from "@/components/mdx-content";
 import { TableOfContents } from "@/components/toc";
 import { extractHeadings, getCustomPost, getCustomPosts } from "@/lib/content";
@@ -45,6 +46,7 @@ export default async function CustomContentPage({ params }: { params: Promise<{ 
     </header>
     <div className={`article-layout${post.showToc && headings.length ? "" : " without-toc"}`}>{post.showToc && headings.length > 0 && <TableOfContents headings={headings} />}<article className="prose"><MdxContent source={post.body} /></article></div>
     <ArticleAuthor name={post.author} />
+    <Comments />
     <nav className="post-nav">{prev ? <Link href={`/content/${section}/${prev.slug}`}><span>이전 글</span><b><ArrowLeft size={15} /> {prev.title}</b></Link> : <span />}{next ? <Link href={`/content/${section}/${next.slug}`}><span>다음 글</span><b>{next.title} <ArrowRight size={15} /></b></Link> : <span />}</nav>
   </div>;
 }

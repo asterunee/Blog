@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { StreakMap } from "@/components/streak-map";
+import { RatingChart } from "@/components/rating-chart";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -29,10 +30,12 @@ export default function AboutPage() {
     <main className="page-shell about-streaks" aria-label="온라인 저지 제출 스트릭">
       <section>
         <header><div><span>SUBMISSION STREAK</span><h2>Codeforces</h2></div><a href="https://codeforces.com/profile/asterunee" target="_blank" rel="noreferrer">@asterunee <ArrowUpRight size={14} /></a></header>
+        <RatingChart judge="Codeforces" />
         <StreakMap judge="Codeforces" />
       </section>
       <section>
         <header><div><span>SUBMISSION STREAK</span><h2>AtCoder</h2></div><a href="https://atcoder.jp/users/asterunee" target="_blank" rel="noreferrer">@asterunee <ArrowUpRight size={14} /></a></header>
+        <RatingChart judge="AtCoder" />
         <StreakMap judge="AtCoder" />
       </section>
     </main>
