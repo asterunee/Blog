@@ -6,6 +6,7 @@ import { getManagedAlgorithms } from "@/lib/taxonomy";
 import { isKeystaticOwner, keystaticOwner } from "@/lib/keystatic-owner";
 import { parseCommentInput } from "@/lib/comments";
 import { getRatingTitle } from "@/lib/ratings";
+import { getAllContentEntries } from "@/lib/content-index";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -66,5 +67,12 @@ describe("content pipeline", () => {
     expect(parseCommentInput({ page: "/posts/example", name: "", body: "좋은 글입니다." })).toEqual({ ok: true, value: { page: "/posts/example", name: "익명", body: "좋은 글입니다." } });
     expect(parseCommentInput({ page: "https://example.com", name: "test", body: "comment" }).ok).toBe(false);
     expect(parseCommentInput({ page: "/posts/example", name: "test", body: "" }).ok).toBe(false);
+  });
+
+  it("builds one chronological feed for the home and all-posts pages", () => {
+    const entries = getAllContentEntries(false);
+    expect(entries.length).toBeGreaterThan(0);
+    expect(entries.map((entry) => entry.date)).toEqual([...entries.map((entry) => entry.date)].sort((a, b) => b.localeCompare(a)));
+    expect(entries.every((entry) => entry.href.startsWith("/") && entry.readingMinutes > 0)).toBe(true);
   });
 });

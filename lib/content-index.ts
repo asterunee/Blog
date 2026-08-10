@@ -11,14 +11,17 @@ export type ContentIndexEntry = {
   category: string;
   tags: string[];
   algorithmTopics: string[];
+  coverImage: string | null;
+  coverAlt: string;
+  readingMinutes: number;
 };
 
 export function getAllContentEntries(includeDrafts = process.env.NODE_ENV !== "production"): ContentIndexEntry[] {
   return [
-    ...getPosts(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/posts/${post.slug}`, kind: getContentTypeName(post.contentType), category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics })),
-    ...getSolutions(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/solutions/${post.slug}`, kind: `PS 풀이 · ${post.judge}`, category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics })),
-    ...getLogs(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/log/${post.slug}`, kind: post.type, category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics })),
-    ...getCustomPosts(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/content/${post.section}/${post.slug}`, kind: post.sectionLabel, category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics })),
+    ...getPosts(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/posts/${post.slug}`, kind: getContentTypeName(post.contentType), category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics, coverImage: post.coverImage, coverAlt: post.coverAlt, readingMinutes: post.readingMinutes })),
+    ...getSolutions(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/solutions/${post.slug}`, kind: `PS 풀이 · ${post.judge}`, category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics, coverImage: post.coverImage, coverAlt: post.coverAlt, readingMinutes: post.readingMinutes })),
+    ...getLogs(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/log/${post.slug}`, kind: post.type, category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics, coverImage: post.coverImage, coverAlt: post.coverAlt, readingMinutes: post.readingMinutes })),
+    ...getCustomPosts(includeDrafts).map((post) => ({ title: post.title, description: post.description, date: post.date, updated: post.updated, href: `/content/${post.section}/${post.slug}`, kind: post.sectionLabel, category: post.category, tags: post.tags, algorithmTopics: post.algorithmTopics, coverImage: post.coverImage, coverAlt: post.coverAlt, readingMinutes: post.readingMinutes })),
   ].sort((a, b) => b.date.localeCompare(a.date));
 }
 
