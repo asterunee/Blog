@@ -214,6 +214,14 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
 .blog-masthead-copy > span { color:#71ebfa; font:8px var(--font-display); letter-spacing:.2em; }
 .blog-masthead-copy h1 { margin:9px 0 8px; font:500 34px/1.25 var(--font-display); letter-spacing:-.045em; }
 .blog-masthead-copy p { margin:0; color:#9fb2c9; font-size:11px; }
+.notice-masthead .blog-masthead-copy { max-width: calc(100% - 155px); }
+.notice-eyebrow { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; color: #71ebfa; font: 8px var(--font-display); letter-spacing: .12em; text-transform: uppercase; }
+.notice-eyebrow time { padding-left: 8px; border-left: 1px solid rgba(159,178,201,.35); color: #9fb2c9; letter-spacing: .03em; }
+.notice-link { width: fit-content; display: flex; align-items: center; gap: 7px; margin-top: 15px; padding-bottom: 4px; border-bottom: 1px solid rgba(113,235,250,.55); color: #71ebfa; font-size: 9px; }
+.notice-controls { position: absolute; z-index: 2; top: 18px; right: 18px; display: flex; align-items: center; gap: 4px; }
+.notice-controls > span { margin-right: 5px; color: #9fb2c9; font: 8px var(--font-display); letter-spacing: .08em; }
+.notice-controls button { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(159,178,201,.3); color: #dbe8f8; background: rgba(3,7,17,.45); backdrop-filter: blur(8px); cursor: pointer; }
+.notice-controls button:hover { color: #71ebfa; border-color: rgba(113,235,250,.55); }
 .feed-header { display:flex; justify-content:space-between; align-items:end; margin:58px 0 20px; }
 .feed-header h2 { margin:5px 0 0; font:500 28px var(--font-display); letter-spacing:-.035em; }
 .feed-header > a { display:flex; align-items:center; gap:7px; padding-bottom:4px; color:var(--muted); border-bottom:1px solid var(--border); font-size:10px; }
@@ -292,6 +300,7 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
   .blog-masthead-copy { left:21px; right:18px; bottom:23px; }
   .blog-masthead-copy h1 { font-size:27px; }
   .blog-masthead-copy p { font-size:10px; }
+  .notice-masthead .blog-masthead-copy { max-width: none; }.notice-eyebrow { margin-bottom: 7px; }.notice-masthead .blog-masthead-copy h1 { padding-right: 0; font-size: 24px; }.notice-masthead .blog-masthead-copy p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }.notice-link { margin-top: 11px; }.notice-controls { top: 12px; right: 12px; }
   .feed-header { margin-top:43px; }
   .feed-header h2 { font-size:24px; }
   .blog-post-card > a { padding:23px 20px; }

@@ -1,23 +1,21 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, Rss, Search } from "lucide-react";
 import { getAllContentEntries } from "@/lib/content-index";
 import { siteConfig } from "@/lib/site";
 import { JudgeSignals } from "@/components/judge-signals";
 import { ContentIndexCard } from "@/components/content-index-card";
+import { NoticeBanner } from "@/components/notice-banner";
+import { getActiveNotices } from "@/lib/notices";
 
 export default function Home() {
   const recent = getAllContentEntries().sort((a, b) => b.updated.localeCompare(a.updated));
   const tags = [...new Set(recent.flatMap((post) => post.tags))];
   const heroImage = siteConfig.backgroundImage || "/images/observatory-hero.webp";
+  const notices = getActiveNotices();
 
   return <div className="blog-home">
     <div className="blog-main-column">
-      <section className="blog-masthead">
-        <Image src={heroImage} alt="블로그 배경 이미지" fill priority sizes="(max-width: 1050px) 100vw, 760px" style={{ objectPosition: siteConfig.backgroundPosition }} />
-        <div className="blog-masthead-shade" />
-        <div className="blog-masthead-copy"><h1>{siteConfig.koreanSubtitle}</h1><p>{siteConfig.intro}</p></div>
-      </section>
+      <NoticeBanner notices={notices} fallback={{ title: siteConfig.koreanSubtitle, summary: siteConfig.intro, image: heroImage, position: siteConfig.backgroundPosition }} />
 
       <header className="feed-header"><div><h2>최근 글</h2></div><Link href="/posts">모든 글 <ArrowRight size={15} /></Link></header>
       {recent.length ? <section className="blog-feed" aria-label="최근 글">{recent.slice(0, 6).map((entry) => <ContentIndexCard key={entry.href} entry={entry} />)}</section> : <section className="content-empty"><BookOpenText size={22} /><h2>첫 이야기를 준비하고 있습니다</h2><p>개발, 알고리즘과 일상에서 발견한 생각을 곧 전해 드릴게요.</p><Link href="/rss.xml">새 글 RSS로 받아보기 <Rss size={14} /></Link></section>}

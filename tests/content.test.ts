@@ -7,6 +7,7 @@ import { isKeystaticOwner, keystaticOwner } from "@/lib/keystatic-owner";
 import { parseCommentInput } from "@/lib/comments";
 import { getRatingTitle } from "@/lib/ratings";
 import { getAllContentEntries } from "@/lib/content-index";
+import { getActiveNotices, getNotices } from "@/lib/notices";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -74,5 +75,11 @@ describe("content pipeline", () => {
     expect(entries.length).toBeGreaterThan(0);
     expect(entries.map((entry) => entry.date)).toEqual([...entries.map((entry) => entry.date)].sort((a, b) => b.localeCompare(a)));
     expect(entries.every((entry) => entry.href.startsWith("/") && entry.readingMinutes > 0)).toBe(true);
+  });
+
+  it("keeps administrator-managed notices ordered and within their display period", () => {
+    const notices = getNotices();
+    expect(notices.map((notice) => notice.priority)).toEqual([...notices.map((notice) => notice.priority)].sort((a, b) => b - a));
+    expect(getActiveNotices("2026-08-10").every((notice) => notice.visible && (notice.startsAt || notice.publishedAt) <= "2026-08-10" && (!notice.endsAt || notice.endsAt >= "2026-08-10"))).toBe(true);
   });
 });
