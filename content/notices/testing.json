@@ -1,0 +1,11 @@
+{
+  "title": "Testing",
+  "summary": "Testing",
+  "label": "공지사항",
+  "publishedAt": "2026-08-10",
+  "linkLabel": "자세히 보기",
+  "newTab": false,
+  "backgroundPosition": "center",
+  "priority": 0,
+  "visible": true
+}
