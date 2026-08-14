@@ -37,7 +37,7 @@ draft: false
 
 ## 7. ARC Wrecker 2
 
-구간 안에서 인접한 두 빌딩의 높이를 동시에 1씩 올리거나 내리는 연산이므로 **alternating sum이 invariant**라는 걸 보면 바로 풀린다. 구간 `[l,r]`에 대해 $A\[l]-A\[l+1]+A\[l+2]-...$를 생각하면 한 번의 연산은 인접한 두 항에 같은 값을 더하거나 빼는데 두 항의 부호가 반대라 변화량이 정확히 상쇄된다. 최종적으로 전부 0을 만들려면 이 값이 0이어야 하고, 반대로 alternating sum이 0인 구간은 필요한 인접 연산들을 적절히 구성해서 실제로 전부 0으로 만들 수 있으므로 이 조건이 필요충분이다. 이제 전체 배열의 alternating prefix sum을 만들어두면 `[l,r]`의 alternating sum이 0일 조건은 prefix 두 개가 같은 것과 동치라, 같은 prefix 값이 등장한 횟수만 세면서 기존 개수를 답에 더하면 끝이다. `unordered_map` 하나로 평균 $O(N)$에 컷난다.
+구간 안에서 인접한 두 빌딩의 높이를 동시에 1씩 올리거나 내리는 연산이므로 **alternating sum이 invariant**라는 걸 보면 바로 풀린다. 구간 `[l,r]`에 대해 `A[l] - A[l+1] + A[l+2] - ...`를 생각하면 한 번의 연산은 인접한 두 항에 같은 값을 더하거나 빼는데, 두 항의 부호가 반대라 변화량이 정확히 상쇄된다. 최종적으로 전부 0을 만들려면 이 alternating sum이 0이어야 하고, 반대로 alternating sum이 0인 구간은 필요한 인접 연산들을 적절히 구성해서 실제로 전부 0으로 만들 수 있으므로 이 조건이 필요충분이다. 이제 전체 배열의 alternating prefix sum을 만들어두면 `[l,r]`의 alternating sum이 0일 조건은 `prefix[r] = prefix[l-1]`과 동치다. 따라서 같은 prefix 값이 이전에 몇 번 등장했는지만 세면서 그 개수를 답에 더하면 끝이고, `unordered_map` 하나로 평균 $O(N)$에 컷난다.
 
 ## 8. Distribute Bunnies
 
