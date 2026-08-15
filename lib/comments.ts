@@ -6,6 +6,8 @@ export type PublicComment = {
   body: string;
   createdAt: string;
   page?: string;
+  parentId?: string;
+  authorId?: string;
 };
 
 export type AdminComment = PublicComment & {
@@ -17,6 +19,7 @@ export type CommentInput = {
   page: string;
   name: string;
   body: string;
+  parentId?: string;
 };
 
 export function parseCommentInput(input: unknown): { ok: true; value: CommentInput } | { ok: false; error: string } {
@@ -25,13 +28,15 @@ export function parseCommentInput(input: unknown): { ok: true; value: CommentInp
   const page = typeof data.page === "string" ? data.page.trim() : "";
   const name = typeof data.name === "string" ? data.name.trim().replace(/\s+/g, " ") : "";
   const body = typeof data.body === "string" ? data.body.trim().replace(/\r\n/g, "\n") : "";
+  const parentId = typeof data.parentId === "string" ? data.parentId.trim() : "";
 
   if (!page.startsWith("/") || page.length > 300) return { ok: false, error: "올바른 글 주소가 아닙니다." };
   if (name.length > commentLimits.name) return { ok: false, error: `이름은 ${commentLimits.name}자까지 입력할 수 있습니다.` };
   if (!body) return { ok: false, error: "댓글 내용을 입력해 주세요." };
   if (body.length > commentLimits.body) return { ok: false, error: `댓글은 ${commentLimits.body}자까지 입력할 수 있습니다.` };
 
-  return { ok: true, value: { page, name: name || "익명", body } };
+  if (parentId && (!parentId.startsWith("comments/") || !parentId.endsWith(".json") || parentId.length >= 300)) return { ok: false, error: "올바른 답글 대상이 아닙니다." };
+  return { ok: true, value: { page, name: name || "익명", body, ...(parentId ? { parentId } : {}) } };
 }
 
 export function parseCommentEdit(input: unknown): { ok: true; value: Pick<PublicComment, "name" | "body"> } | { ok: false; error: string } {

@@ -101,7 +101,7 @@ export function CommentAdmin() {
       {filtered.map((comment) => <article key={comment.id} className={styles.comment}>
         <header>
           <div className={styles.avatar}>{comment.name.slice(0, 1).toUpperCase()}</div>
-          <div><b>{comment.name}</b><time dateTime={comment.createdAt}>{new Intl.DateTimeFormat("ko-KR", { dateStyle: "long", timeStyle: "short" }).format(new Date(comment.createdAt))}</time></div>
+          <div><b>{comment.name}{comment.parentId ? " · 답글" : ""}</b><time dateTime={comment.createdAt}>{comment.authorId ? `@${comment.authorId} · ` : ""}{new Intl.DateTimeFormat("ko-KR", { dateStyle: "long", timeStyle: "short" }).format(new Date(comment.createdAt))}</time></div>
           <div className={styles.actions}>
             <button type="button" onClick={() => startEditing(comment)} disabled={busy} aria-label="댓글 수정"><Pencil size={14} /> 수정</button>
             <button type="button" onClick={() => void deleteComment(comment)} disabled={busy} aria-label="댓글 삭제"><Trash2 size={14} /> 삭제</button>

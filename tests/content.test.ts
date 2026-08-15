@@ -8,6 +8,7 @@ import { parseCommentEdit, parseCommentInput } from "@/lib/comments";
 import { getRatingTitle } from "@/lib/ratings";
 import { getAllContentEntries } from "@/lib/content-index";
 import { getActiveNotices, getNotices } from "@/lib/notices";
+import { parseAuthInput } from "@/lib/user-types";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -71,6 +72,14 @@ describe("content pipeline", () => {
     expect(parseCommentInput({ page: "/posts/example", name: "test", body: "" }).ok).toBe(false);
     expect(parseCommentEdit({ name: " editor ", body: "수정된 댓글" })).toEqual({ ok: true, value: { name: "editor", body: "수정된 댓글" } });
     expect(parseCommentEdit({ name: "editor", body: "" }).ok).toBe(false);
+    expect(parseCommentInput({ page: "/posts/example", name: "reader", body: "답글", parentId: "comments/abc/reply.json" }).ok).toBe(true);
+    expect(parseCommentInput({ page: "/posts/example", name: "reader", body: "답글", parentId: "invalid" }).ok).toBe(false);
+  });
+
+  it("validates blog account registration and login inputs", () => {
+    expect(parseAuthInput({ username: "Reader_01", displayName: " 독자 ", password: "correct-horse" }, true)).toEqual({ ok: true, value: { username: "reader_01", displayName: "독자", password: "correct-horse" } });
+    expect(parseAuthInput({ username: "x", displayName: "독자", password: "correct-horse" }, true).ok).toBe(false);
+    expect(parseAuthInput({ username: "reader", displayName: "", password: "short" }, false).ok).toBe(false);
   });
 
   it("builds one chronological feed for the home and all-posts pages", () => {

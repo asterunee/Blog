@@ -35,6 +35,12 @@
       "visible": true
     },
     {
+      "label": "방명록",
+      "labelEn": "Guestbook",
+      "href": "/guestbook",
+      "visible": true
+    },
+    {
       "label": "소개",
       "labelEn": "About",
       "href": "/about",

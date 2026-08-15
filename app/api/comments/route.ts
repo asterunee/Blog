@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { parseCommentEdit, parseCommentInput, type AdminComment, type PublicComment } from "@/lib/comments";
 import { getAllContentEntries } from "@/lib/content-index";
 import { isKeystaticOwner } from "@/lib/keystatic-owner";
+import { getUserSession } from "@/lib/user-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,7 +35,7 @@ function allowRequest(request: Request) {
     rateLimits.set(ip, { count: 1, resetAt: now + 10 * 60 * 1000 });
     return true;
   }
-  if (current.count >= 3) return false;
+  if (current.count >= 8) return false;
   current.count += 1;
   return true;
 }
@@ -70,6 +71,7 @@ async function listAllComments(): Promise<AdminComment[]> {
 
   const entries = getAllContentEntries(true);
   const knownPages = new Map(entries.map((entry) => [pagePrefix(entry.href), { page: entry.href, title: entry.title }]));
+  knownPages.set(pagePrefix("/guestbook"), { page: "/guestbook", title: "방명록" });
   const comments = await Promise.all(blobs.map(async (blob): Promise<AdminComment | null> => {
     const comment = await readComment(blob.url, blob.pathname);
     if (!comment) return null;
@@ -98,7 +100,8 @@ export async function GET(request: Request) {
     const result = await list({ prefix: pagePrefix(page), limit: 1000 });
     const newest = result.blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime()).slice(0, 100);
     const comments = (await Promise.all(newest.map((blob) => readComment(blob.url, blob.pathname)))).filter((comment): comment is PublicComment => Boolean(comment));
-    return NextResponse.json({ comments, canModerate: await canModerate() }, { headers: { "Cache-Control": "private, no-store" } });
+    const [moderator, currentUser] = await Promise.all([canModerate(), getUserSession()]);
+    return NextResponse.json({ comments, canModerate: moderator, currentUser }, { headers: { "Cache-Control": "private, no-store" } });
   } catch {
     return NextResponse.json({ error: "댓글을 불러오지 못했습니다." }, { status: 503 });
   }
@@ -106,6 +109,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ error: "허용되지 않은 요청입니다." }, { status: 403 });
+  const user = await getUserSession();
+  if (!user) return NextResponse.json({ error: "로그인 후 댓글을 남길 수 있습니다." }, { status: 401 });
   if (!allowRequest(request)) return NextResponse.json({ error: "댓글을 너무 빠르게 작성하고 있습니다. 잠시 후 다시 시도해 주세요." }, { status: 429, headers: { "Retry-After": "600" } });
 
   let raw: unknown;
@@ -115,12 +120,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
   if (raw && typeof raw === "object" && "website" in raw && Boolean((raw as { website?: unknown }).website)) return NextResponse.json({ ok: true }, { status: 201 });
-  const parsed = parseCommentInput(raw);
+  const parsed = parseCommentInput(raw && typeof raw === "object" ? { ...raw, name: user.displayName } : raw);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+  let parentId = parsed.value.parentId;
+  if (parentId) {
+    if (!parentId.startsWith(pagePrefix(parsed.value.page))) return NextResponse.json({ error: "다른 글의 댓글에는 답글을 달 수 없습니다." }, { status: 400 });
+    const parent = await readComment(parentId, parentId);
+    if (!parent) return NextResponse.json({ error: "답글을 남길 댓글을 찾을 수 없습니다." }, { status: 404 });
+    parentId = parent.parentId || parent.id;
+  }
 
   const createdAt = new Date().toISOString();
   const id = `${pagePrefix(parsed.value.page)}${Date.now()}-${crypto.randomUUID()}.json`;
-  const comment: PublicComment = { id, name: parsed.value.name, body: parsed.value.body, createdAt, page: parsed.value.page };
+  const comment: PublicComment = { id, name: user.displayName, body: parsed.value.body, createdAt, page: parsed.value.page, authorId: user.username, ...(parentId ? { parentId } : {}) };
   try {
     await put(id, JSON.stringify(comment), { access: "private", addRandomSuffix: false, contentType: "application/json", cacheControlMaxAge: 60 });
     return NextResponse.json({ comment }, { status: 201 });
@@ -130,7 +143,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  if (!sameOrigin(request) || !await canModerate()) return NextResponse.json({ error: "수정 권한이 없습니다." }, { status: 403 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "수정 권한이 없습니다." }, { status: 403 });
   let raw: Record<string, unknown>;
   try {
     raw = await request.json() as Record<string, unknown>;
@@ -139,11 +152,12 @@ export async function PUT(request: Request) {
   }
   const id = typeof raw.id === "string" ? raw.id : "";
   if (!validCommentId(id)) return NextResponse.json({ error: "올바른 댓글이 아닙니다." }, { status: 400 });
-  const parsed = parseCommentEdit(raw);
-  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-
   const existing = await readComment(id, id);
   if (!existing) return NextResponse.json({ error: "댓글을 찾을 수 없습니다." }, { status: 404 });
+  const [moderator, user] = await Promise.all([canModerate(), getUserSession()]);
+  if (!moderator && (!user || existing.authorId !== user.username)) return NextResponse.json({ error: "수정 권한이 없습니다." }, { status: 403 });
+  const parsed = parseCommentEdit({ ...raw, name: moderator ? raw.name : existing.name });
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
   const comment: PublicComment = { ...existing, ...parsed.value, id };
   try {
     await put(id, JSON.stringify(comment), { access: "private", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json", cacheControlMaxAge: 60 });
@@ -154,7 +168,7 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!sameOrigin(request) || !await canModerate()) return NextResponse.json({ error: "삭제 권한이 없습니다." }, { status: 403 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "삭제 권한이 없습니다." }, { status: 403 });
   let raw: { page?: unknown; id?: unknown };
   try {
     raw = await request.json() as { page?: unknown; id?: unknown };
@@ -162,8 +176,21 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
   if (typeof raw.id !== "string" || !validCommentId(raw.id) || (typeof raw.page === "string" && !raw.id.startsWith(pagePrefix(raw.page)))) return NextResponse.json({ error: "올바른 댓글이 아닙니다." }, { status: 400 });
+  const existing = await readComment(raw.id, raw.id);
+  if (!existing) return NextResponse.json({ error: "댓글을 찾을 수 없습니다." }, { status: 404 });
+  const [moderator, user] = await Promise.all([canModerate(), getUserSession()]);
+  if (!moderator && (!user || existing.authorId !== user.username)) return NextResponse.json({ error: "삭제 권한이 없습니다." }, { status: 403 });
   try {
-    await del(raw.id);
+    const ids = [raw.id];
+    if (!existing.parentId) {
+      const page = existing.page || (typeof raw.page === "string" ? raw.page : "");
+      if (page) {
+        const result = await list({ prefix: pagePrefix(page), limit: 1000 });
+        const children = await Promise.all(result.blobs.map((blob) => readComment(blob.url, blob.pathname)));
+        ids.push(...children.filter((comment): comment is PublicComment => Boolean(comment?.parentId === raw.id)).map((comment) => comment.id));
+      }
+    }
+    await del(ids);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "댓글을 삭제하지 못했습니다." }, { status: 503 });

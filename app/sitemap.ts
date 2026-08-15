@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/archive",
     "/library",
     "/log",
+    "/guestbook",
     "/about",
     ...customContentSections.filter((section) => section.visible).map((section) => `/content/${section.key}`),
   ].map((path) => ({

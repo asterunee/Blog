@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Languages, Menu, Monitor, MoonStar, Palette, Search, Sun, X } from "lucide-react";
 import { profiles, siteConfig } from "@/lib/site";
+import { UserAccount } from "@/components/user-account";
 
 type SearchItem = { title: string; href: string; description: string; tags: string[]; category?: string; categoryName?: string };
 const themeOptions = [
@@ -109,6 +110,7 @@ export function InteractiveShell({ items }: { items: SearchItem[] }) {
   return <>
     <div className="header-actions">
       <button className="icon-button search-trigger" onClick={() => setPaletteOpen(true)} aria-label="검색 열기"><Search size={17} /><span>⌘K</span></button>
+      <UserAccount />
       <button className="icon-button language-trigger" onClick={() => setLanguage((value) => value === "ko" ? "en" : "ko")} aria-label={`언어: ${language === "ko" ? "한국어" : "English"}`} title="한국어 / English"><Languages size={18} /></button>
       <div className="theme-picker">
         <button className="icon-button theme-trigger" onClick={() => setThemeMenuOpen((value) => !value)} aria-expanded={themeMenuOpen} aria-label={`테마: ${activeTheme.label}`} title={`테마: ${activeTheme.label}`}><ActiveThemeIcon size={18} /><span>테마 · {activeTheme.label}</span></button>
