@@ -1,0 +1,30 @@
+---
+title: Biweekly Contest 189
+description: 'Biweekly Contest 189 풀이 '
+category: leetcode
+algorithmTopics: []
+tags: []
+date: 2026-08-16
+updated: 2026-08-16
+author: asterunee
+showToc: true
+featured: false
+draft: false
+---
+![](/images/content/competitiveprogramming/biweekly-contest-189/Screenshot%202026-08-16%20at%206.41.20%E2%80%AFAM.png)
+
+## Q1. Elevator Requests I
+
+그냥 시뮬레이션이다. 엘리베이터가 0층에서 시작하고 요청을 주어진 순서대로 처리해야 하니까 현재 층을 `cur`라고 두고 다음 요청 $x$가 올 때마다 $|x-cur|$를 답에 더한 뒤 `cur=x`로 바꾸면 끝이다. 중간에 다른 요청 층을 지나가더라도 순서를 바꿔서 처리하는 문제가 아니기 때문에 딱히 greedy고 뭐고 없고 입력을 한 번 긁으면 된다. 전체는 $O(M)$.
+
+## Q2. Minimum Operations to Make a Rotated Palindrome I
+
+가능한 rotation을 전부 보면 된다. 문자열을 왼쪽으로 $r$번 돌렸다고 고정하면 rotation 자체에 $r$번의 operation이 들고, 이제 그 문자열을 palindrome으로 만드는 최소 비용만 구하면 된다. 서로 마주보는 문자 $a,b$는 한쪽 문자를 알파벳에서 앞으로 계속 넘겨서 다른 쪽에 맞추면 되는데 `z -> a`도 가능하므로 필요한 최소 횟수는 알파벳상 두 방향 거리 중 작은 값, 즉 $\min(|a-b|,26-|a-b|)$이다. palindrome의 각 대칭 pair는 서로 독립이라 이 값을 모든 $i\<n/2$에 대해 더하면 해당 rotation의 최적값이 바로 나오고, $r=0,\ldots,n-1$을 전부 긁어서 최솟값을 잡으면 끝이다. $n\le2000$이라 굳이 더 꼬을 필요 없이 $O(n^2)$ 브루트포스가 그대로 박힌다.
+
+## Q3. K-th Digit in Infinite String
+
+문자열을 실제로 만들 생각을 하면 당연히 안 되고 $k$가 어느 자릿수 구간, 어느 10개짜리 block, 그 안의 몇 번째 숫자에 들어가는지만 바로 찾아가면 된다. 처음 `1`부터 `9`까지는 따로 처리하고, 이후 $d$자리 수는 총 $9\cdot10^\{d-1}$개라 이 구간이 차지하는 문자는 $9\cdot10^\{d-1}\cdot d$개다. $k$에서 이 길이를 계속 빼면서 원하는 자릿수 $d$를 찾고 나면, 같은 자릿수 안에서는 숫자 10개가 한 block이라 block 하나의 길이는 $10d$다. 따라서 $(k-1)/(10d)$로 몇 번째 block인지, $(k-1)\bmod(10d)$로 block 내부 위치를 바로 잡을 수 있다. 이제 block 번호가 짝수면 숫자가 증가하는 순서고 홀수면 감소하는 순서라는 조건만 처리해서 실제 숫자 $x$를 복원한 뒤, block 내부 위치를 $d$로 나눈 나머지 번째 digit을 뽑으면 끝이다. 결국 무한 문자열은 아예 만들지도 않고 자릿수 구간을 18번 정도만 넘기므로 사실상 $O(\log k)$.
+
+## Q4. Elevator Requests II
+
+여기서는 각 request가 처리될 때까지 매초 penalty가 1씩 쌓이므로 결국 모든 요청의 **도착 시간 합을 최소화**하는 문제다. 층들을 정렬하고 `start`를 끼워 넣어서 보면, 지금까지 엘리베이터가 돌아다니며 처리한 요청들의 범위는 항상 `start`를 포함하는 하나의 interval로 볼 수 있다. 수직선에서 왼쪽 끝에서 오른쪽 끝까지 이동했다면 그 사이의 요청은 어차피 지나가면서 전부 처리되기 때문에 다음에 새로 먹을 수 있는 후보도 현재 interval 바로 왼쪽 또는 바로 오른쪽으로 압축된다. 그래서 `dp[l][r][0/1]`을 `[l,r]`까지 처리했고 현재 위치가 왼쪽/오른쪽 끝일 때의 최소 penalty로 두는 interval DP를 하면 된다. 여기서 아직 안 끝난 요청이 `rem`개인 상태로 거리 $d$를 이동하면 그 $d$초 동안 `rem`개의 요청이 전부 계속 기다리므로 penalty가 정확히 $d\cdot rem$ 증가한다. 따라서 왼쪽 또는 오른쪽 다음 점으로 interval을 한 칸 확장하면서 `현재 dp + 이동거리 * rem`만 넘기면 된다. `start` 자체가 request면 시간 0에 바로 처리된 것만 count를 맞춰주면 되고, 상태가 $O(M^2)$개에 transition이 상수 개라 전체는 $O(M^2)$, 메모리도 $O(M^2)$이다.
