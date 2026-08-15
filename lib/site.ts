@@ -34,6 +34,7 @@ export type Profile = { name: string; handle: string; url?: string };
 export const profiles: Profile[] = [
   { name: "Codeforces", handle: "asterunee", url: process.env.NEXT_PUBLIC_CODEFORCES_URL || "https://codeforces.com/profile/asterunee" },
   { name: "AtCoder", handle: "asterunee", url: process.env.NEXT_PUBLIC_ATCODER_URL || "https://atcoder.jp/users/asterunee" },
+  { name: "LeetCode", handle: "asterunee", url: process.env.NEXT_PUBLIC_LEETCODE_URL || "https://leetcode.com/u/asterunee/" },
   { name: "CodeChef", handle: "asterunee", url: process.env.NEXT_PUBLIC_CODECHEF_URL },
   { name: "Repovive", handle: "asterunee", url: process.env.NEXT_PUBLIC_REPOVIVE_URL },
   { name: "Yukicoder", handle: "asterunee", url: process.env.NEXT_PUBLIC_YUKICODER_URL },

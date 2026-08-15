@@ -19,6 +19,6 @@ export function SolutionExplorer({ posts }: { posts: Solution[] }) {
     <div className={`solution-results ${view}`}>{filtered.map((post, index) => <Link key={post.slug} className="solution-row" href={`/solutions/${post.slug}`} prefetch={false}>
       <span className="catalog-no">{String(index + 1).padStart(2,"0")}</span><div className="solution-main"><div><span className="status-dot" />{post.status}</div><h2>{post.title}</h2><p>{post.description}</p><div className="tag-row">{post.tags.map((t) => <span key={t}>{t}</span>)}</div></div><dl><div><dt>출처</dt><dd>{post.judge} · {post.problemId}</dd></div><div><dt>난이도</dt><dd>{post.difficulty} · {post.tier}</dd></div><div><dt>작성일</dt><dd>{post.date} · {post.solveTime}분</dd></div></dl>
     </Link>)}</div>
-    {!filtered.length && <div className="empty-state">{posts.length ? "이 조건과 일치하는 풀이가 없습니다." : "첫 PS 풀이를 준비하고 있습니다. Codeforces와 AtCoder를 비롯한 다양한 문제의 접근 과정을 곧 공유합니다."}</div>}
+    {!filtered.length && <div className="empty-state">{posts.length ? "이 조건과 일치하는 풀이가 없습니다." : "첫 PS 풀이를 준비하고 있습니다. Codeforces, AtCoder와 LeetCode를 비롯한 다양한 문제의 접근 과정을 곧 공유합니다."}</div>}
   </>;
 }

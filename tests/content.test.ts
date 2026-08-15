@@ -4,7 +4,7 @@ import { customContentSections, writerSections } from "@/lib/editor-settings";
 import { siteSettings, siteThemes } from "@/lib/settings";
 import { getManagedAlgorithms } from "@/lib/taxonomy";
 import { isKeystaticOwner, keystaticOwner } from "@/lib/keystatic-owner";
-import { parseCommentInput } from "@/lib/comments";
+import { parseCommentEdit, parseCommentInput } from "@/lib/comments";
 import { getRatingTitle } from "@/lib/ratings";
 import { getAllContentEntries } from "@/lib/content-index";
 import { getActiveNotices, getNotices } from "@/lib/notices";
@@ -62,12 +62,15 @@ describe("content pipeline", () => {
   it("maps online judge ratings to their public titles", () => {
     expect(getRatingTitle("Codeforces", 1501)).toBe("Specialist");
     expect(getRatingTitle("AtCoder", 1916)).toBe("Blue");
+    expect(getRatingTitle("LeetCode", 1700)).toBe("Contest");
   });
 
   it("validates anonymous comments before storage", () => {
     expect(parseCommentInput({ page: "/posts/example", name: "", body: "좋은 글입니다." })).toEqual({ ok: true, value: { page: "/posts/example", name: "익명", body: "좋은 글입니다." } });
     expect(parseCommentInput({ page: "https://example.com", name: "test", body: "comment" }).ok).toBe(false);
     expect(parseCommentInput({ page: "/posts/example", name: "test", body: "" }).ok).toBe(false);
+    expect(parseCommentEdit({ name: " editor ", body: "수정된 댓글" })).toEqual({ ok: true, value: { name: "editor", body: "수정된 댓글" } });
+    expect(parseCommentEdit({ name: "editor", body: "" }).ok).toBe(false);
   });
 
   it("builds one chronological feed for the home and all-posts pages", () => {

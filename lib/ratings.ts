@@ -1,4 +1,4 @@
-export type RatingJudge = "Codeforces" | "AtCoder";
+export type RatingJudge = "Codeforces" | "AtCoder" | "LeetCode";
 
 export function getRatingTitle(judge: RatingJudge, rating: number) {
   if (judge === "Codeforces") {
@@ -14,6 +14,7 @@ export function getRatingTitle(judge: RatingJudge, rating: number) {
     return "Legendary Grandmaster";
   }
 
+  if (judge === "LeetCode") return "Contest";
   if (rating < 400) return "Gray";
   if (rating < 800) return "Brown";
   if (rating < 1200) return "Green";

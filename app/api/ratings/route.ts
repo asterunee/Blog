@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLeetCodeActivity } from "@/lib/leetcode";
 
 export const revalidate = 21600;
 
@@ -20,11 +21,29 @@ async function atcoder(): Promise<RatingPoint[]> {
   return data.filter((change) => change.IsRated).map((change) => ({ date: new Date(change.EndTime).toISOString().slice(0, 10), rating: change.NewRating, change: change.NewRating - change.OldRating, contest: change.ContestNameEn || change.ContestName, rank: change.Place, url: `https://${change.ContestScreenName}` }));
 }
 
+async function leetcode(): Promise<RatingPoint[]> {
+  const activity = await getLeetCodeActivity();
+  let previous = 0;
+  return activity.contestHistory.map((entry) => {
+    const point = {
+      date: new Date(entry.contest.startTime * 1000).toISOString().slice(0, 10),
+      rating: Math.round(entry.rating),
+      change: previous ? Math.round(entry.rating - previous) : 0,
+      contest: entry.contest.title,
+      rank: entry.ranking,
+      url: `https://leetcode.com/contest/${entry.contest.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+    };
+    previous = entry.rating;
+    return point;
+  });
+}
+
 export async function GET() {
-  const [codeforcesResult, atcoderResult] = await Promise.allSettled([codeforces(), atcoder()]);
+  const [codeforcesResult, atcoderResult, leetcodeResult] = await Promise.allSettled([codeforces(), atcoder(), leetcode()]);
   return NextResponse.json({
     codeforces: codeforcesResult.status === "fulfilled" ? codeforcesResult.value : [],
     atcoder: atcoderResult.status === "fulfilled" ? atcoderResult.value : [],
-    fallback: { codeforces: codeforcesResult.status === "rejected", atcoder: atcoderResult.status === "rejected" },
+    leetcode: leetcodeResult.status === "fulfilled" ? leetcodeResult.value : [],
+    fallback: { codeforces: codeforcesResult.status === "rejected", atcoder: atcoderResult.status === "rejected", leetcode: leetcodeResult.status === "rejected" },
   }, { headers: { "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400" } });
 }

@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 
 type Day = { date: string; count: number };
 
-export function StreakMap({ judge = "Codeforces" }: { judge?: "Codeforces" | "AtCoder" }) {
+export function StreakMap({ judge = "Codeforces" }: { judge?: "Codeforces" | "AtCoder" | "LeetCode" }) {
   const [days, setDays] = useState<Day[]>([]);
   const [fallback, setFallback] = useState(false);
-  const endpoint = judge === "AtCoder" ? "/api/atcoder" : "/api/codeforces";
+  const endpoint = judge === "AtCoder" ? "/api/atcoder" : judge === "LeetCode" ? "/api/leetcode" : "/api/codeforces";
   useEffect(() => { fetch(endpoint).then((r) => r.json()).then((data) => { setDays(data.days); setFallback(data.fallback); }).catch(() => setFallback(true)); }, [endpoint]);
   if (!days.length) return <div className="streak-loading" aria-live="polite">제출 활동을 불러오는 중…</div>;
   return <div><div className="streak-map" role="list" aria-label={`최근 98일 ${judge} 제출 활동`}>

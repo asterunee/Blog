@@ -5,14 +5,15 @@ import { ChevronDown, ExternalLink } from "lucide-react";
 import { getRatingTitle, type RatingJudge } from "@/lib/ratings";
 
 type RatingPoint = { date: string; rating: number; change: number; contest: string; rank: number; url: string };
-type RatingsResponse = { codeforces: RatingPoint[]; atcoder: RatingPoint[] };
+type RatingsResponse = { codeforces: RatingPoint[]; atcoder: RatingPoint[]; leetcode: RatingPoint[] };
 
 export function RatingChart({ judge }: { judge: RatingJudge }) {
   const [points, setPoints] = useState<RatingPoint[]>([]);
-  const key = judge.toLowerCase() as "codeforces" | "atcoder";
+  const [loaded, setLoaded] = useState(false);
+  const key = judge.toLowerCase() as "codeforces" | "atcoder" | "leetcode";
 
   useEffect(() => {
-    fetch("/api/ratings").then((response) => response.json()).then((data: RatingsResponse) => setPoints(data[key] || [])).catch(() => setPoints([]));
+    fetch("/api/ratings").then((response) => response.json()).then((data: RatingsResponse) => setPoints(data[key] || [])).catch(() => setPoints([])).finally(() => setLoaded(true));
   }, [key]);
 
   const chart = useMemo(() => {
@@ -32,7 +33,7 @@ export function RatingChart({ judge }: { judge: RatingJudge }) {
     return { width, height, min, max, coordinates, path: coordinates.map((point) => `${point.x},${point.y}`).join(" ") };
   }, [points]);
 
-  if (!chart) return <div className="rating-chart-loading">레이팅 기록을 불러오는 중…</div>;
+  if (!chart) return <div className="rating-chart-loading">{loaded ? `아직 반영된 ${judge} 대회 레이팅이 없습니다.` : "레이팅 기록을 불러오는 중…"}</div>;
   const latest = chart.coordinates.at(-1)!;
   const title = getRatingTitle(judge, latest.rating);
 

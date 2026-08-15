@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { StreakMap } from "@/components/streak-map";
 import { RatingChart } from "@/components/rating-chart";
+import { LeetCodeActivity } from "@/components/leetcode-activity";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -37,6 +38,11 @@ export default function AboutPage() {
         <header><div><span>SUBMISSION STREAK</span><h2>AtCoder</h2></div><a href="https://atcoder.jp/users/asterunee" target="_blank" rel="noreferrer">@asterunee <ArrowUpRight size={14} /></a></header>
         <RatingChart judge="AtCoder" />
         <StreakMap judge="AtCoder" />
+      </section>
+      <section>
+        <header><div><span>PROBLEM SOLVING</span><h2>LeetCode</h2></div><a href="https://leetcode.com/u/asterunee/" target="_blank" rel="noreferrer">@asterunee <ArrowUpRight size={14} /></a></header>
+        <LeetCodeActivity />
+        <StreakMap judge="LeetCode" />
       </section>
     </main>
   </div>;

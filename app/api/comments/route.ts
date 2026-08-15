@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { del, get, list, put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { parseCommentInput, type PublicComment } from "@/lib/comments";
+import { parseCommentEdit, parseCommentInput, type AdminComment, type PublicComment } from "@/lib/comments";
+import { getAllContentEntries } from "@/lib/content-index";
 import { isKeystaticOwner } from "@/lib/keystatic-owner";
 
 export const dynamic = "force-dynamic";
@@ -43,24 +44,60 @@ async function canModerate() {
   return isKeystaticOwner(accessToken);
 }
 
-async function readComment(url: string): Promise<PublicComment | null> {
+function validCommentId(id: string) {
+  return id.startsWith("comments/") && id.endsWith(".json") && id.length < 300;
+}
+
+async function readComment(url: string, pathname?: string): Promise<PublicComment | null> {
   try {
     const result = await get(url, { access: "private", useCache: false });
     if (!result || result.statusCode !== 200) return null;
-    return await new Response(result.stream).json() as PublicComment;
+    const comment = await new Response(result.stream).json() as PublicComment;
+    return { ...comment, id: pathname || comment.id };
   } catch {
     return null;
   }
 }
 
+async function listAllComments(): Promise<AdminComment[]> {
+  const blobs: { url: string; pathname: string; uploadedAt: Date }[] = [];
+  let cursor: string | undefined;
+  do {
+    const result = await list({ prefix: "comments/", limit: 1000, cursor });
+    blobs.push(...result.blobs);
+    cursor = result.hasMore ? result.cursor : undefined;
+  } while (cursor);
+
+  const entries = getAllContentEntries(true);
+  const knownPages = new Map(entries.map((entry) => [pagePrefix(entry.href), { page: entry.href, title: entry.title }]));
+  const comments = await Promise.all(blobs.map(async (blob): Promise<AdminComment | null> => {
+    const comment = await readComment(blob.url, blob.pathname);
+    if (!comment) return null;
+    const known = knownPages.get(blob.pathname.split("/").slice(0, 2).join("/") + "/");
+    const page = comment.page || known?.page || "";
+    return { ...comment, page, pageTitle: known?.title || (page ? page : "이전 댓글 · 원문 경로 정보 없음") };
+  }));
+  return comments.filter((comment): comment is AdminComment => Boolean(comment)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
 export async function GET(request: Request) {
-  const page = new URL(request.url).searchParams.get("page") || "";
+  const params = new URL(request.url).searchParams;
+  if (params.get("admin") === "1") {
+    if (!await canModerate()) return NextResponse.json({ error: "관리자 권한이 없습니다." }, { status: 403 });
+    try {
+      return NextResponse.json({ comments: await listAllComments() }, { headers: { "Cache-Control": "private, no-store" } });
+    } catch {
+      return NextResponse.json({ error: "전체 댓글을 불러오지 못했습니다." }, { status: 503 });
+    }
+  }
+
+  const page = params.get("page") || "";
   if (!page.startsWith("/") || page.length > 300) return NextResponse.json({ error: "올바른 글 주소가 아닙니다." }, { status: 400 });
 
   try {
     const result = await list({ prefix: pagePrefix(page), limit: 1000 });
     const newest = result.blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime()).slice(0, 100);
-    const comments = (await Promise.all(newest.map((blob) => readComment(blob.url)))).filter((comment): comment is PublicComment => Boolean(comment));
+    const comments = (await Promise.all(newest.map((blob) => readComment(blob.url, blob.pathname)))).filter((comment): comment is PublicComment => Boolean(comment));
     return NextResponse.json({ comments, canModerate: await canModerate() }, { headers: { "Cache-Control": "private, no-store" } });
   } catch {
     return NextResponse.json({ error: "댓글을 불러오지 못했습니다." }, { status: 503 });
@@ -83,12 +120,36 @@ export async function POST(request: Request) {
 
   const createdAt = new Date().toISOString();
   const id = `${pagePrefix(parsed.value.page)}${Date.now()}-${crypto.randomUUID()}.json`;
-  const comment: PublicComment = { id, name: parsed.value.name, body: parsed.value.body, createdAt };
+  const comment: PublicComment = { id, name: parsed.value.name, body: parsed.value.body, createdAt, page: parsed.value.page };
   try {
     await put(id, JSON.stringify(comment), { access: "private", addRandomSuffix: false, contentType: "application/json", cacheControlMaxAge: 60 });
     return NextResponse.json({ comment }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "댓글을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요." }, { status: 503 });
+  }
+}
+
+export async function PUT(request: Request) {
+  if (!sameOrigin(request) || !await canModerate()) return NextResponse.json({ error: "수정 권한이 없습니다." }, { status: 403 });
+  let raw: Record<string, unknown>;
+  try {
+    raw = await request.json() as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
+  }
+  const id = typeof raw.id === "string" ? raw.id : "";
+  if (!validCommentId(id)) return NextResponse.json({ error: "올바른 댓글이 아닙니다." }, { status: 400 });
+  const parsed = parseCommentEdit(raw);
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+  const existing = await readComment(id, id);
+  if (!existing) return NextResponse.json({ error: "댓글을 찾을 수 없습니다." }, { status: 404 });
+  const comment: PublicComment = { ...existing, ...parsed.value, id };
+  try {
+    await put(id, JSON.stringify(comment), { access: "private", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json", cacheControlMaxAge: 60 });
+    return NextResponse.json({ comment });
+  } catch {
+    return NextResponse.json({ error: "댓글을 수정하지 못했습니다." }, { status: 503 });
   }
 }
 
@@ -100,7 +161,7 @@ export async function DELETE(request: Request) {
   } catch {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
-  if (typeof raw.page !== "string" || typeof raw.id !== "string" || !raw.id.startsWith(pagePrefix(raw.page))) return NextResponse.json({ error: "올바른 댓글이 아닙니다." }, { status: 400 });
+  if (typeof raw.id !== "string" || !validCommentId(raw.id) || (typeof raw.page === "string" && !raw.id.startsWith(pagePrefix(raw.page)))) return NextResponse.json({ error: "올바른 댓글이 아닙니다." }, { status: 400 });
   try {
     await del(raw.id);
     return NextResponse.json({ ok: true });
