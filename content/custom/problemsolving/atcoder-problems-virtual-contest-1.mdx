@@ -11,6 +11,8 @@ showToc: true
 featured: false
 draft: false
 ---
+![](/images/content/problemsolving/atcoder-problems-virtual-contest-1/Screenshot%202026-08-16%20at%209.06.11%E2%80%AFAM.png)
+
 ## 1. Decayed Bridges
 
 다리를 실제로 하나씩 지우려고 하면 연결 컴포넌트가 쪼개지는 걸 관리해야 해서 귀찮은데, 순서를 뒤집어서 **다리가 하나도 없는 상태에서 역순으로 복구한다**고 보면 DSU로 바로 떨어진다. 처음에는 모든 섬이 서로 끊겨 있으므로 불편도는 $N(N-1)/2$이고, 역순으로 다리 `(a,b)`를 추가할 때 둘이 이미 같은 컴포넌트라면 아무 변화가 없다. 서로 다른 컴포넌트고 크기가 각각 $x,y$라면 지금까지 연결되지 않았던 $xy$개의 섬 쌍이 새로 연결되므로 불편도에서 $xy$만 빼주면 된다. 각 시점의 답은 해당 다리를 다시 추가하기 직전의 불편도를 저장하면 되고, 전형적인 offline reverse + DSU 문제다. 시간복잡도는 $O((N+M) alpha(N))$ 정도라 사실상 선형으로 컷난다.
