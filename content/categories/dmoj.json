@@ -1,0 +1,11 @@
+{
+  "name": "DMOJ",
+  "appliesTo": [
+    "posts",
+    "solutions",
+    "custom:problemsolving",
+    "custom:competitiveprogramming"
+  ],
+  "order": 0,
+  "visible": true
+}
