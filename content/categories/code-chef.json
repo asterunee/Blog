@@ -1,0 +1,11 @@
+{
+  "name": "CodeChef",
+  "appliesTo": [
+    "posts",
+    "solutions",
+    "custom:competitiveprogramming",
+    "custom:problemsolving"
+  ],
+  "order": 0,
+  "visible": true
+}
