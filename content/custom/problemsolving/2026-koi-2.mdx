@@ -1,0 +1,24 @@
+---
+title: 2026KOI 2차 고등부
+description: '2026KOI 2차 고등부 문제 풀이 '
+category: koi
+algorithmTopics: []
+tags: []
+date: 2026-08-20
+updated: 2026-08-20
+author: asterunee
+showToc: true
+featured: false
+draft: false
+---
+## 1. 간식 분배
+
+![](/images/content/problemsolving/2026-koi-2/Screenshot%202026-08-20%20at%2011.28.20%E2%80%AFPM.png)
+
+처음 보면 매칭처럼 보이는데 실제로는 degree 1 peeling으로 끝난다. 어떤 시점에 학생 `i`가 정확히 하나의 간식을 가져가려면 현재 남아 있는 좋아하는 간식의 개수가 정확히 1이어야 한다. 특히 처음 들어가는 학생은 처음부터 degree가 1이어야 하고, 그 학생이 유일하게 좋아하는 간식 `x`를 가져가면 `x`를 삭제한 뒤 `x`를 좋아하던 다른 학생들의 degree를 전부 1씩 줄이면 된다. 새로 degree 1이 된 학생들을 queue에 계속 넣어서 Kahn 비슷하게 긁으면 된다. 이 greedy가 안전한 이유도 간단한데, 현재 degree 1인 학생의 유일한 간식이 `x`라면 어떤 정답 순서에서도 그 학생보다 먼저 `x`를 가져가는 다른 학생이 있을 수 없다. 그러면 이 학생은 나중에 0개를 가져가게 되기 때문에, 그냥 지금 맨 앞에 빼도 항상 손해가 없다. 각 간식에서 그 간식을 좋아하는 학생들의 reverse adjacency만 들고 있으면 되고, 학생의 남은 유일한 간식은 degree와 XOR를 같이 관리하면 set 없이도 바로 찾을 수 있다. 끝까지 `N`명을 전부 제거했으면 제거한 순서가 그대로 답이고 중간에 queue가 비었는데 학생이 남으면 불가능하다. 각 학생-간식 edge는 간식이 사라질 때 딱 한 번만 보므로 전체 복잡도는 $O(N+sum C\[i])$.
+
+## 2. 극솟값 제거
+
+![](/images/content/problemsolving/2026-koi-2/Screenshot%202026-08-20%20at%2011.28.29%E2%80%AFPM.png)
+
+전체 배열에서 각 원소가 몇 번째 변화에서 지워지는지를 먼저 전처리해두고, 쿼리에서는 양쪽 경계 때문에 실제로는 안 지워지는 애들만 보정하는 식으로 간다. 먼저 monotone stack으로 `L[i]`를 왼쪽에서 가장 가까운 `A[j] > A[i]`, `R[i]`를 오른쪽에서 가장 가까운 `A[j] > A[i]`로 잡는다. 전체 배열 기준 제거 시각을 `D[i]`라고 하면 한쪽에 더 큰 원소가 아예 없는 애는 prefix/suffix maximum이라 영원히 안 지워지고, 나머지는 작은 값부터 보면서 `i`가 지워진 다음에야 그 양쪽 nearest greater가 다음 단계 후보가 될 수 있다는 걸 이용해 `D[L[i]] = max(D[L[i]], D[i]+1)`, `D[R[i]] = max(D[R[i]], D[i]+1)` 식으로 올리면 모든 제거 시각을 구할 수 있다. 이제 쿼리 `[l,r]`에서 `D[i] <= t`인 원소를 일단 전부 지워진 걸로 세면 거의 맞는데, `L[i] < l`인 애들은 구간 안에서는 prefix maximum이라 절대 안 지워지고 `R[i] > r`인 애들도 suffix maximum이라 절대 안 지워진다. 이 예외들은 각각 `l -> R[l] -> R[R[l]] -> ...`와 `r -> L[r] -> L[L[r]] -> ...` 체인으로 정확히 잡히고, 체인을 따라갈수록 `D`가 증가하므로 binary lifting으로 `D <= t`인 구간만 빠르게 셀 수 있다. 두 체인은 구간 최댓값에서 한 번 겹치므로 그 중복만 마지막에 한 번 복구하면 된다. 한편 `[l,r]` 안에서 `D[i] <= t`인 전체 개수는 쿼리를 `t`순으로 offline 정렬하고 Fenwick에 `D[i]`가 작은 위치부터 추가해서 바로 구하면 된다. 결국 global하게 지워지는 개수에서 왼쪽 prefix maximum chain과 오른쪽 suffix maximum chain을 빼고 겹친 최댓값 하나를 보정하면 실제 제거 개수가 나오고, 답은 구간 길이에서 그 값을 빼면 된다. 전체 복잡도는 $O((N+Q)log N)$.
