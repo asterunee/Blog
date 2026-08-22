@@ -86,7 +86,7 @@ export function CommentAdmin() {
 
   return <main className={styles.page}>
     <header className={styles.header}>
-      <div><Link href="/keystatic"><ArrowLeft size={15} /> 작성기로 돌아가기</Link><span>ASTERUNEE STUDIO</span><h1>댓글 관리</h1><p>블로그 전체 댓글을 한곳에서 확인하고 필요한 내용을 수정하거나 삭제합니다.</p></div>
+      <div><nav className={styles.adminNav}><Link href="/keystatic"><ArrowLeft size={15} /> 작성기로 돌아가기</Link><Link href="/admin/analytics">방문 통계</Link></nav><span>ASTERUNEE STUDIO</span><h1>댓글 관리</h1><p>블로그 전체 댓글을 한곳에서 확인하고 필요한 내용을 수정하거나 삭제합니다.</p></div>
       <button type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={15} className={busy ? styles.spinning : ""} /> 새로고침</button>
     </header>
 

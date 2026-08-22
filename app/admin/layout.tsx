@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { isKeystaticOwner } from "@/lib/keystatic-owner";
 
 export const metadata: Metadata = {
-  title: "댓글 관리 · asterunee studio",
-  description: "asterunee 블로그 댓글 관리",
+  title: "블로그 관리 · asterunee studio",
+  description: "asterunee 블로그 댓글과 방문 통계 관리",
   robots: { index: false, follow: false },
 };
 

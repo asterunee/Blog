@@ -311,6 +311,13 @@ kbd { font-size: 9px; border: 1px solid var(--border); padding: 1px 4px; }
 .signal-widget .judge-signals { grid-template-columns:1fr; margin:0; }
 .signal-widget .judge-signals > div { background:var(--bg); }
 .widget-empty { margin:0; color:var(--muted); font-size:10px; }
+.visitor-widget h3 { display:flex; align-items:center; gap:7px; margin:0 0 13px; font:600 12px var(--font-display); }
+.visitor-widget h3 svg { color:var(--cyan); }
+.visitor-widget > div { display:grid; grid-template-columns:auto auto 1px auto auto; align-items:baseline; gap:6px; }
+.visitor-widget strong { color:var(--text); font:500 20px var(--font-display); }
+.visitor-widget span { color:var(--muted); font-size:9px; }
+.visitor-widget i { width:1px; height:18px; margin:0 8px; background:var(--border); }
+.visitor-widget p { margin:9px 0 0; color:var(--muted); font-size:8px; }
 .content-empty { min-height:220px; padding:42px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; border:1px dashed var(--border); background:color-mix(in srgb,var(--surface) 35%,transparent); }
 .content-empty svg { color:var(--cyan); }
 .content-empty h2 { margin:14px 0 6px; font:500 21px var(--font-display); }

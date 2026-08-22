@@ -9,6 +9,7 @@ import { getRatingTitle } from "@/lib/ratings";
 import { getAllContentEntries } from "@/lib/content-index";
 import { getActiveNotices, getNotices } from "@/lib/notices";
 import { parseAuthInput } from "@/lib/user-types";
+import { aggregateAnalytics, createAnalyticsEventPath, getDateRange, parseAnalyticsEventPath } from "@/lib/analytics";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -93,5 +94,23 @@ describe("content pipeline", () => {
     const notices = getNotices();
     expect(notices.map((notice) => notice.priority)).toEqual([...notices.map((notice) => notice.priority)].sort((a, b) => b - a));
     expect(getActiveNotices("2026-08-10").every((notice) => notice.visible && (notice.startsAt || notice.publishedAt) <= "2026-08-10" && (!notice.endsAt || notice.endsAt >= "2026-08-10"))).toBe(true);
+  });
+
+  it("builds anonymous daily and hourly visitor analytics without storing IP addresses", () => {
+    const first = "123e4567-e89b-42d3-a456-426614174000";
+    const second = "987e6543-e21b-42d3-b456-426614174999";
+    const morning = new Date("2026-08-22T00:15:00.000Z");
+    const evening = new Date("2026-08-22T13:30:00.000Z");
+    const paths = [
+      createAnalyticsEventPath(first, "/", morning, "one"),
+      createAnalyticsEventPath(first, "/posts", morning, "two"),
+      createAnalyticsEventPath(second, "/posts", evening, "three"),
+    ];
+    expect(parseAnalyticsEventPath(paths[0])).toMatchObject({ date: "2026-08-22", hour: "09", visitorId: first, pathname: "/" });
+    const report = aggregateAnalytics(paths, ["2026-08-22"], "2026-08-22", "2026-08-22");
+    expect(report.today).toEqual({ visitors: 2, pageviews: 3 });
+    expect(report.hours[9]).toMatchObject({ visitors: 1, pageviews: 2 });
+    expect(report.topPages[0]).toEqual({ pathname: "/posts", visitors: 2, pageviews: 2 });
+    expect(getDateRange(3, new Date("2026-08-22T03:00:00.000Z"))).toEqual(["2026-08-20", "2026-08-21", "2026-08-22"]);
   });
 });
